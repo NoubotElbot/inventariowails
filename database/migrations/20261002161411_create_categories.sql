@@ -1,0 +1,11 @@
+-- +goose Up
+CREATE TABLE
+    IF NOT EXISTS categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+-- +goose Down
+DROP TABLE IF EXISTS categories;
