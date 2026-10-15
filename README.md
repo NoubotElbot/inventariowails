@@ -1,151 +1,237 @@
 # InventarioWails
 
-An inventory management desktop application built with Go, Wails, Vue, TypeScript and SQLite. It allows controlling categories, products, stock adjustments and sales in a simple local application.
+**A lightweight desktop inventory management system built with Go, Wails, Vue, TypeScript, and SQLite.**
+
+InventarioWails is a local-first desktop application designed to simplify inventory management for small and medium-sized retail operations. It provides tools to manage products, organize categories, track stock movements, and process sales — all without requiring an external server.
 
 ## Overview
 
-This project follows a layered architecture based on Go and Wails bindings for the desktop shell, with a Vue frontend and a SQLite database. It is designed to manage a small to medium retail inventory flow without requiring a separate server.
+The application follows a layered architecture that separates business logic, application use cases, database access, and the desktop interface.
 
-## Functional requirements
+- **Local-first:** All data is stored locally using SQLite.
+- **Modular architecture:** Business rules and infrastructure remain separated.
+- **Inventory tracking:** Monitor stock levels, adjustments, and product movements.
+- **Sales management:** Register sales containing multiple products and quantities.
+- **Desktop experience:** A Vue-powered interface integrated with Go through Wails.
 
-The application must support the following business capabilities:
+## Features
 
-- Category management
-  - Create, list, update and delete categories.
-  - Validate that the category name is required and unique.
+### Categories
 
-- Product management
-  - Create, list, search by identifier, update and delete products.
-  - Assign a product to a category (optional).
-  - Validate required fields such as name, code, price and stock.
-  - Prevent duplicate product codes.
-  - Toggle product active/inactive state.
-  - Detect low stock based on the minimum stock threshold.
+- Create, list, update, and delete categories.
+- Validate required category names.
+- Prevent duplicate category names.
 
-- Inventory control
-  - Register stock adjustments.
-  - Record movement type and optional notes.
-  - Validate movement quantities and ensure there is enough stock for reductions.
-  - List stock movement history per product.
+### Products
 
-- Sales management
-  - Create sales with multiple products and quantities.
-  - Validate that the sale contains at least one item.
-  - Prevent invalid or out-of-stock product quantities.
-  - Calculate total and line subtotals.
-  - List and retrieve sales records.
+- Create, list, search, update, and delete products.
+- Assign products to optional categories.
+- Validate required fields, including name, code, price, and stock.
+- Prevent duplicate product codes.
+- Activate or deactivate products.
+- Identify low-stock products based on configurable minimum stock levels.
 
-- Data persistence
-  - Store data locally in SQLite.
-  - Use migrations to maintain the schema.
-  - Keep the app usable in desktop mode without external services.
+### Inventory Control
 
-## Models
+- Register stock adjustments.
+- Track movement types and optional notes.
+- Validate quantities and prevent stock reductions below available inventory.
+- Review stock movement history for individual products.
+
+### Sales
+
+- Create sales containing multiple products.
+- Validate that each sale includes at least one item.
+- Prevent invalid quantities and sales exceeding available stock.
+- Calculate item subtotals and sale totals.
+- List and retrieve sales records.
+
+### Data Persistence
+
+- Store application data locally in SQLite.
+- Manage database schema changes through migrations.
+- Operate independently of external services.
+
+## Domain Models
+
+The application uses the following core entities.
 
 ### Category
 
-- `ID: int64`
-- `Name: string`
-- `CreatedAt: time.Time`
-- `UpdatedAt: time.Time`
+| Field | Type |
+| --- | --- |
+| `ID` | `int64` |
+| `Name` | `string` |
+| `CreatedAt` | `time.Time` |
+| `UpdatedAt` | `time.Time` |
 
 ### Product
 
-- `ID: int64`
-- `CategoryID: *int64`
-- `Name: string`
-- `Code: string`
-- `Barcode: string`
-- `Price: float64`
-- `Stock: int`
-- `MinStock: int`
-- `Active: bool`
-- `CreatedAt: time.Time`
-- `UpdatedAt: time.Time`
+| Field | Type |
+| --- | --- |
+| `ID` | `int64` |
+| `CategoryID` | `*int64` |
+| `Name` | `string` |
+| `Code` | `string` |
+| `Barcode` | `string` |
+| `Price` | `float64` |
+| `Stock` | `int` |
+| `MinStock` | `int` |
+| `Active` | `bool` |
+| `CreatedAt` | `time.Time` |
+| `UpdatedAt` | `time.Time` |
 
 ### Sale
 
-- `ID: int64`
-- `Total: float64`
-- `Items: []SaleItem`
-- `CreatedAt: time.Time`
+| Field | Type |
+| --- | --- |
+| `ID` | `int64` |
+| `Total` | `float64` |
+| `Items` | `[]SaleItem` |
+| `CreatedAt` | `time.Time` |
 
 ### SaleItem
 
-- `ID: int64`
-- `SaleID: int64`
-- `ProductID: int64`
-- `Quantity: int`
-- `UnitPrice: float64`
-- `Subtotal: float64`
-- `CreatedAt: time.Time`
+| Field | Type |
+| --- | --- |
+| `ID` | `int64` |
+| `SaleID` | `int64` |
+| `ProductID` | `int64` |
+| `Quantity` | `int` |
+| `UnitPrice` | `float64` |
+| `Subtotal` | `float64` |
+| `CreatedAt` | `time.Time` |
 
 ### StockMovement
 
-- `ID: int64`
-- `ProductID: int64`
-- `Quantity: int`
-- `MovementType: MovementType`
-- `Notes: string`
-- `CreatedAt: time.Time`
+| Field | Type |
+| --- | --- |
+| `ID` | `int64` |
+| `ProductID` | `int64` |
+| `Quantity` | `int` |
+| `MovementType` | `MovementType` |
+| `Notes` | `string` |
+| `CreatedAt` | `time.Time` |
 
-Movement types supported by the domain model:
+Supported movement types:
 
-- `adjustment`
-- `sale`
-- `return`
+- `adjustment` — Manual inventory adjustments.
+- `sale` — Stock changes associated with sales.
+- `return` — Inventory changes associated with returned products.
 
 ## Architecture
 
-The project is organized by responsibilities:
+The project is organized by responsibility, keeping business rules independent of the desktop framework and persistence implementation.
 
-- `app/`: Wails application bootstrap and lifecycle setup.
-- `database/`: SQLite migrations and migration loader.
-- `internal/domain/`: business entities and validation rules.
-- `internal/application/`: use cases for categories, products, stock and sales.
-- `internal/handler/`: Wails-exposed handlers used by the frontend.
-- `internal/infrastructure/sqlite/`: database access implementation.
-- `frontend/`: Vue + TypeScript frontend built with Vite.
+```text
+InventarioWails/
+├── app/                          # Wails bootstrap and lifecycle
+├── database/                     # SQLite migrations and loader
+├── internal/
+│   ├── domain/                   # Entities and business rules
+│   ├── application/              # Application use cases
+│   ├── handler/                  # Wails-exposed handlers
+│   └── infrastructure/
+│       └── sqlite/               # SQLite data access
+└── frontend/                     # Vue, TypeScript, and Vite
+```
 
-## Technology stack
+| Layer | Responsibility |
+| --- | --- |
+| `domain` | Defines entities, invariants, and business rules. |
+| `application` | Coordinates use cases for categories, products, inventory, and sales. |
+| `handler` | Exposes application operations to the frontend through Wails bindings. |
+| `infrastructure/sqlite` | Implements database access using SQLite. |
+| `database` | Manages schema migrations and database initialization. |
+| `app` | Configures the application lifecycle and dependencies. |
+| `frontend` | Provides the desktop user interface. |
+
+## Technology Stack
+
+| Technology | Purpose |
+| --- | --- |
+| [Go](https://go.dev/) 1.26 | Backend and business logic |
+| [Wails](https://wails.io/) v2 | Native desktop application shell |
+| [Vue 3](https://vuejs.org/) | Frontend framework |
+| [TypeScript](https://www.typescriptlang.org/) | Frontend type safety |
+| [Vite](https://vite.dev/) | Frontend tooling and development server |
+| [SQLite](https://sqlite.org/) | Local relational database |
+| [sqlx](https://github.com/jmoiron/sqlx) | Database access |
+| [goose](https://github.com/pressly/goose) | Database schema migrations |
+
+## Getting Started
+
+### Prerequisites
+
+Install the following tools before running the application:
 
 - Go 1.26
-- [Wails](https://wails.io/docs/gettingstarted/installation) v2 for desktop application shell
-- Vue 3 + TypeScript for the frontend
-- Vite for frontend build and dev server
-- SQLite for local persistence
-- `sqlx` for database access
-- `goose` for schema migrations
+- Node.js and pnpm
+- Wails CLI v2
+- A C compiler and the platform dependencies required by Wails
 
-## Useful commands
+Refer to the [Wails installation guide](https://wails.io/docs/gettingstarted/installation) for platform-specific setup instructions.
 
-Run the application in development mode:
+### Installation
+
+Clone the repository and install the frontend dependencies:
+
+```bash
+git clone <repository-url>
+cd InventarioWails
+
+cd frontend
+pnpm install
+cd ..
+```
+
+### Development
+
+Start the application in development mode:
 
 ```bash
 wails dev
 ```
 
-Build the desktop application for production:
+### Production Build
+
+Build the desktop application:
 
 ```bash
 wails build
 ```
 
-Run backend tests:
+### Testing
+
+Run the Go test suite:
 
 ```bash
-go test ./...
+go test ./internal/domain/... ./internal/application/...
 ```
 
-## Database configuration
+## Database Configuration
 
-The app uses SQLite and resolves the database path automatically:
+The application uses SQLite for local persistence. The database path is resolved automatically by `app/app.go`.
 
-- Development mode: `inventario_dev.db` in the project root
-- Production mode: the user configuration directory under `inventario/inventario.db`
+| Environment | Database location |
+| --- | --- |
+| Development | `inventario_dev.db` in the project root |
+| Production | User configuration directory under `inventario/inventario.db` |
 
-This behavior is handled in `app/app.go`.
+Database migrations are managed with Goose to keep the schema versioned and consistent across installations.
 
-## Notes
+## Design Principles
 
-This project is a local desktop inventory system intended for practical use in small operations. The repository is structured to keep business logic centralized in the domain and application layers, while the desktop shell and database access remain isolated.
+- **Separation of concerns:** Each layer has a clearly defined responsibility.
+- **Domain-driven business logic:** Validation and inventory rules are centralized in the domain and application layers.
+- **Local persistence:** The application works without a separate backend server.
+- **Maintainability:** Modular components make individual features easier to test and extend.
+- **Data integrity:** Validation and database constraints help prevent invalid inventory and sales records.
+
+## Project Status
+
+InventarioWails is intended as a practical foundation for desktop inventory management. Its modular structure supports incremental development of category management, product catalogues, stock control, and sales workflows.
+
+---
+
+*Built with Go, Wails, Vue, TypeScript, and SQLite.*
