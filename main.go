@@ -29,6 +29,7 @@ func main() {
 			a.CategoryHandler,
 			a.ProductHandler,
 			a.StockHandler,
+			a.SaleHandler,
 		},
 	})
 	if err != nil {

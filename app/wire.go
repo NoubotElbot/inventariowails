@@ -3,6 +3,7 @@ package app
 import (
 	appCategory "inventario/internal/application/category"
 	appProduct "inventario/internal/application/product"
+	appSale "inventario/internal/application/sale"
 	appStock "inventario/internal/application/stock"
 	"inventario/internal/handler"
 	"inventario/internal/infrastructure/sqlite"
@@ -13,6 +14,7 @@ func (a *App) wire() {
 	categoryRepo := sqlite.NewCategoryRepository(a.db)
 	productRepo := sqlite.NewProductRepository(a.db)
 	stockRepo := sqlite.NewStockRepository(a.db)
+	saleRepo := sqlite.NewSaleRepository(a.db)
 
 	// --- Category ---
 	a.CategoryHandler = handler.NewCategoryHandler(
@@ -37,5 +39,12 @@ func (a *App) wire() {
 	a.StockHandler = handler.NewStockHandler(
 		appStock.NewAdjustUseCase(stockRepo, productRepo),
 		appStock.NewListMovementsUseCase(stockRepo, productRepo),
+	)
+
+	// --- Sale ---
+	a.SaleHandler = handler.NewSaleHandler(
+		appSale.NewCreateUseCase(saleRepo, productRepo, stockRepo),
+		appSale.NewListUseCase(saleRepo),
+		appSale.NewFindUseCase(saleRepo),
 	)
 }

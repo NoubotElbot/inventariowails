@@ -18,6 +18,7 @@ type App struct {
 	CategoryHandler *handler.CategoryHandler
 	ProductHandler  *handler.ProductHandler
 	StockHandler    *handler.StockHandler
+	SaleHandler     *handler.SaleHandler
 }
 
 func NewApp() *App {
