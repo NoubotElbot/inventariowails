@@ -26,7 +26,6 @@ func main() {
 		OnStartup:  a.Startup,
 		OnShutdown: a.Shutdown,
 		Bind: []interface{}{
-			a,
 			a.CategoryHandler,
 			a.ProductHandler,
 			a.StockHandler,

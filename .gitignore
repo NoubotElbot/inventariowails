@@ -2,4 +2,6 @@ build/bin
 node_modules
 frontend/dist
 .env
-data/
+inventario_dev.db
+inventario_dev.db-wal
+inventario_dev.db-shm

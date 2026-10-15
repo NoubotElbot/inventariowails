@@ -1,8 +1,8 @@
 package sqlite
 
 import (
-	"embed"
 	"fmt"
+	"io/fs"
 	"log"
 
 	"github.com/jmoiron/sqlx"
@@ -10,21 +10,19 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
-var migrations embed.FS
-
-func NewDB(dsn string) (*sqlx.DB, error) {
+func NewDB(dsn string, migrations fs.FS) (*sqlx.DB, error) {
 	db, err := sqlx.Open("sqlite3", dsn+"?_foreign_keys=on&_journal_mode=WAL")
 	if err != nil {
 		return nil, fmt.Errorf("open sqlite: %w", err)
 	}
 
-	db.SetMaxOpenConns(1) // SQLite no soporta escrituras concurrentes
+	db.SetMaxOpenConns(1)
 
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("ping sqlite: %w", err)
 	}
 
-	if err := runMigrations(db); err != nil {
+	if err := runMigrations(db, migrations); err != nil {
 		return nil, fmt.Errorf("run migrations: %w", err)
 	}
 
@@ -32,12 +30,12 @@ func NewDB(dsn string) (*sqlx.DB, error) {
 	return db, nil
 }
 
-func runMigrations(db *sqlx.DB) error {
+func runMigrations(db *sqlx.DB, migrations fs.FS) error {
 	goose.SetBaseFS(migrations)
 
 	if err := goose.SetDialect("sqlite3"); err != nil {
 		return err
 	}
 
-	return goose.Up(db.DB, "database/migrations")
+	return goose.Up(db.DB, "migrations")
 }
