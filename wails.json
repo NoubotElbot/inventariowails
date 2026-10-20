@@ -10,5 +10,6 @@
   "author": {
     "name": "Cristofer",
     "email": "66644622+NoubotElbot@users.noreply.github.com"
-  }
+  },
+  "wailsjsdir": "./frontend/src/wailsjs"
 }
