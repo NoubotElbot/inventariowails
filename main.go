@@ -7,6 +7,7 @@ import (
 
 	"inventario/app"
 
+	"github.com/joho/godotenv"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -21,6 +22,8 @@ func init() {
 }
 
 func main() {
+	_ = godotenv.Load()
+
 	inventory, err := app.NewApp()
 	if err != nil {
 		log.Fatalf("error inicializando la aplicación: %v", err)

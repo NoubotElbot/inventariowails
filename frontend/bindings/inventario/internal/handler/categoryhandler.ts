@@ -7,10 +7,6 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import * as pagination$0 from "../domain/pagination/models.js";
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore: Unused imports
 import * as $models from "./models.js";
 
 export function CreateCategory(req: $models.CreateCategoryRequest): $CancellablePromise<$models.CategoryResponse | null> {
@@ -29,7 +25,7 @@ export function GetCategory(id: number): $CancellablePromise<$models.CategoryRes
     });
 }
 
-export function ListCategories(req: pagination$0.Params): $CancellablePromise<$models.PageResponse<$models.CategoryResponse>> {
+export function ListCategories(req: $models.ListCategoriesRequest): $CancellablePromise<$models.PageResponse<$models.CategoryResponse>> {
     return $Call.ByID(1077238979, req).then(($result: any) => {
         return $$createType2($result);
     });

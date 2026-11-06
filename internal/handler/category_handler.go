@@ -7,6 +7,12 @@ import (
 	"inventario/internal/domain/pagination"
 )
 
+// ListCategoriesRequest carries pagination and optional search filter.
+type ListCategoriesRequest struct {
+	Search string `json:"search"`
+	pagination.Params
+}
+
 // --- DTOs ---
 
 type CategoryResponse struct {
@@ -60,8 +66,11 @@ func NewCategoryHandler(
 
 // --- métodos expuestos a Wails ---
 
-func (h *CategoryHandler) ListCategories(req pagination.Params) (PageResponse[CategoryResponse], error) {
-	page, err := h.list.Execute(req)
+func (h *CategoryHandler) ListCategories(req ListCategoriesRequest) (PageResponse[CategoryResponse], error) {
+	page, err := h.list.Execute(domain.FindAllQuery{
+		Search: req.Search,
+		Params: req.Params,
+	})
 	if err != nil {
 		return PageResponse[CategoryResponse]{}, err
 	}

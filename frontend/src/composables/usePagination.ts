@@ -1,15 +1,20 @@
 import { computed, ref } from 'vue';
 import type { DataTablePageEvent } from 'primevue/datatable';
 
-import type { PageParams, PageResponse } from '@/types/pagination';
+import type { ListCategoriesRequest, PageResponse } from '@/types/pagination';
 
 export function usePagination(initialPageSize = 10) {
   const page = ref(1); // 1-based
   const pageSize = ref(initialPageSize);
   const total = ref(0);
+  const search = ref('');
 
   const first = computed(() => (page.value - 1) * pageSize.value);
-  const params = computed<PageParams>(() => ({ page: page.value, page_size: pageSize.value }));
+  const params = computed<ListCategoriesRequest>(() => ({
+    search: search.value,
+    page: page.value,
+    page_size: pageSize.value,
+  }));
 
   /** Updates state from a PrimeVue DataTable `@page` event (0-based page). */
   function onPage(event: DataTablePageEvent): void {
@@ -28,5 +33,10 @@ export function usePagination(initialPageSize = 10) {
     page.value = Math.max(1, target);
   }
 
-  return { page, pageSize, total, first, params, onPage, apply, goTo };
+  function setSearch(value: string): void {
+    search.value = value;
+    page.value = 1;
+  }
+
+  return { page, pageSize, total, first, search, params, onPage, apply, goTo, setSearch };
 }

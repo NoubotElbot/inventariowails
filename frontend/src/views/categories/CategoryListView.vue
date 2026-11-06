@@ -1,20 +1,18 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useConfirm } from 'primevue/useconfirm';
-import { useToast } from 'primevue/usetoast';
+import { onMounted } from 'vue';
 import FolderOpen from '@primeicons/vue/folder-open';
-import PencilLine from '@primeicons/vue/pencil';
-import Plus from '@primeicons/vue/plus';
 import Tag from '@primeicons/vue/tag';
-import Trash from '@primeicons/vue/trash';
 import { useCategories } from '@/composables/useCategories';
+import { formatDateTime } from '@/utils/date';
 import CategoryCreateDialog from './CategoryCreateDialog.vue';
+import CategoryUpdateDialog from './CategoryUpdateDialog.vue';
+import CategoryDeleteButton from './CategoryDeleteButton.vue';
+import SearchInput from '@/components/SearchInput.vue';
 
 // ---------------------------------------------------------------------------
 // Composables
 // ---------------------------------------------------------------------------
-const { items, loading, error, first, pageSize, total, fetchAll, onPage, clearError } =
-  useCategories();
+const { items, loading, error, pagination, fetchAll, onPage, onSearch, clearError } = useCategories();
 
 // ---------------------------------------------------------------------------
 // Init
@@ -35,6 +33,9 @@ onMounted(fetchAll);
       <CategoryCreateDialog @created="fetchAll" />
     </div>
 
+    <!-- Búsqueda ----------------------------------------------------------->
+    <SearchInput placeholder="Buscar por nombre…" @search="onSearch" />
+
     <!-- Error banner -------------------------------------------------------->
     <Message v-if="error" severity="error" :closable="true" @close="clearError">
       {{ error }}
@@ -46,9 +47,9 @@ onMounted(fetchAll);
       :loading="loading"
       lazy
       paginator
-      :rows="pageSize"
-      :first="first"
-      :total-records="total"
+      :rows="pagination.pageSize"
+      :first="pagination.first"
+      :total-records="pagination.total"
       paginator-template="PrevPageLink PageLinks NextPageLink"
       striped-rows
       table-style="min-width: 30rem"
@@ -74,33 +75,15 @@ onMounted(fetchAll);
 
       <Column field="created_at" header="Creada" style="width: 12rem">
         <template #body="{ data }">
-          <span class="text-sm text-surface-500">{{ data.created_at.toLocaleDateString() }}</span>
+          <span class="text-sm text-surface-500">{{ formatDateTime(data.created_at) }}</span>
         </template>
       </Column>
 
       <Column header="Acciones" style="width: 7rem">
         <template #body="{ data }">
           <div class="flex items-center gap-1">
-            <!-- <Button
-              severity="secondary"
-              text
-              rounded
-              size="small"
-              v-tooltip.top="'Editar'"
-              @click="openEditDialog(data)"
-            >
-              <template #icon><PencilLine :size="15" /></template>
-            </Button>
-            <Button
-              severity="danger"
-              text
-              rounded
-              size="small"
-              v-tooltip.top="'Eliminar'"
-              @click="onDelete(data)"
-            >
-              <template #icon><Trash :size="15" /></template>
-            </Button> -->
+            <CategoryUpdateDialog :category="data" @updated="fetchAll" />
+            <CategoryDeleteButton :category="data" @deleted="fetchAll" />
           </div>
         </template>
       </Column>

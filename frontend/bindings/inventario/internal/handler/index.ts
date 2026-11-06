@@ -19,6 +19,7 @@ export {
     CreateCategoryRequest,
     CreateProductRequest,
     CreateSaleRequest,
+    ListCategoriesRequest,
     PageResponse,
     ProductResponse,
     SaleItemRequest,

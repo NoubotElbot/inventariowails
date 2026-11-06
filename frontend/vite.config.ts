@@ -15,6 +15,11 @@ export default defineConfig({
     }),
     wails('./bindings'),
   ],
+  server: {
+    host: '0.0.0.0',
+    port: 9245,
+    strictPort: true,
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

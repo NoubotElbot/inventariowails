@@ -7,3 +7,4 @@ frontend/dist
 inventario_dev.db
 inventario_dev.db-wal
 inventario_dev.db-shm
+.task/

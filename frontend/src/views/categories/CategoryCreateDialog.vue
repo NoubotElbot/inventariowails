@@ -2,7 +2,10 @@
 import { Plus } from '@primeicons/vue';
 import { ref } from 'vue';
 import { useCategories } from '@/composables/useCategories';
-const { create } = useCategories();
+import { useToast } from 'primevue/usetoast';
+
+const { create, error } = useCategories();
+const toast = useToast();
 
 interface Props {
   visible?: boolean;
@@ -30,6 +33,13 @@ async function handleCreate() {
   form.value.name = '';
   open.value = false;
   emit('created');
+
+  toast.add({
+    summary: 'Categoría creada',
+    detail: 'La categoría se ha creado correctamente.',
+    life: 3000,
+    severity: 'success',
+  });
 }
 </script>
 
@@ -39,6 +49,7 @@ async function handleCreate() {
       <Plus />
       Nueva categoría
     </Button>
+
     <Dialog
       v-model:visible="open"
       header="Crear categoría"
@@ -51,7 +62,12 @@ async function handleCreate() {
           Crea una nueva categoría para organizar tus productos.
         </span>
 
-        <InputText placeholder="Nombre de la categoría" v-model="form.name" />
+        <div class="flex flex-col gap-2">
+          <InputText placeholder="Nombre de la categoría" v-model="form.name" />
+          <Message v-if="error" severity="error" size="small" variant="simple">
+            {{ error }}
+          </Message>
+        </div>
         <div class="flex justify-end gap-2">
           <Button label="Cancelar" severity="secondary" @click="open = false" />
           <Button label="Crear" @click="handleCreate" />
