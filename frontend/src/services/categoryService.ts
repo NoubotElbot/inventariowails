@@ -5,10 +5,10 @@ import {
   UpdateCategory,
 } from 'bindings/inventario/internal/handler/categoryhandler';
 
-import type { PageParams } from '@/types/pagination';
+import type { ListCategoriesRequest } from '@/types/pagination';
 
 export const categoryService = {
-  list: (params: PageParams) => ListCategories(params),
+  list: (req: ListCategoriesRequest) => ListCategories(req),
 
   create: (name: string) => CreateCategory({ name }),
 

@@ -10,7 +10,7 @@ type Option struct {
 
 type Repository interface {
 	FindOptions() ([]Option, error)
-	FindAll(p pagination.Params) (pagination.Result[Category], error)
+	FindAll(q FindAllQuery) (pagination.Result[Category], error)
 	FindByID(id int64) (*Category, error)
 	Save(c *Category) error
 	Update(c *Category) error

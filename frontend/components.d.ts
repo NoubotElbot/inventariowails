@@ -17,10 +17,13 @@ declare module 'vue' {
     Column: typeof import('primevue/column')['default']
     DataTable: typeof import('primevue/datatable')['default']
     Dialog: typeof import('primevue/dialog')['default']
+    IconField: typeof import('primevue/iconfield')['default']
+    InputIcon: typeof import('primevue/inputicon')['default']
     InputText: typeof import('primevue/inputtext')['default']
     Message: typeof import('primevue/message')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SearchInput: typeof import('./src/components/SearchInput.vue')['default']
     Sidebar: typeof import('primevue/sidebar')['default']
     SidebarAside: typeof import('primevue/sidebaraside')['default']
     SidebarContent: typeof import('primevue/sidebarcontent')['default']
@@ -39,5 +42,8 @@ declare module 'vue' {
     SidebarTrigger: typeof import('primevue/sidebartrigger')['default']
     ThemeToggle: typeof import('./src/components/ThemeToggle.vue')['default']
     Toast: typeof import('primevue/toast')['default']
+  }
+  export interface GlobalDirectives {
+    Tooltip: typeof import('primevue/tooltip')['default']
   }
 }

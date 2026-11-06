@@ -184,6 +184,38 @@ export class CreateSaleRequest {
 }
 
 /**
+ * ListCategoriesRequest carries pagination and optional search filter.
+ */
+export class ListCategoriesRequest {
+    "search": string;
+    "page": number;
+    "page_size": number;
+
+    /** Creates a new ListCategoriesRequest instance. */
+    constructor($$source: Partial<ListCategoriesRequest> = {}) {
+        if (!("search" in $$source)) {
+            this["search"] = "";
+        }
+        if (!("page" in $$source)) {
+            this["page"] = 0;
+        }
+        if (!("page_size" in $$source)) {
+            this["page_size"] = 0;
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new ListCategoriesRequest instance from a string or object.
+     */
+    static createFrom($$source: any = {}): ListCategoriesRequest {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new ListCategoriesRequest($$parsedSource as Partial<ListCategoriesRequest>);
+    }
+}
+
+/**
  * PageResponse is the shared paginated DTO returned to the frontend.
  */
 export class PageResponse<T> {

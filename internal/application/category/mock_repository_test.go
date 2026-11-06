@@ -4,7 +4,12 @@ import (
 	domain "inventario/internal/domain/category"
 	"inventario/internal/domain/pagination"
 	"sort"
+	"strings"
 )
+
+func containsFold(s, substr string) bool {
+	return strings.Contains(strings.ToLower(s), strings.ToLower(substr))
+}
 
 type mockRepo struct {
 	categories map[int64]domain.Category
@@ -26,17 +31,19 @@ func newMockRepo() *mockRepo {
 	}
 }
 
-func (m *mockRepo) FindAll(p pagination.Params) (pagination.Result[domain.Category], error) {
+func (m *mockRepo) FindAll(q domain.FindAllQuery) (pagination.Result[domain.Category], error) {
 	if m.findAllErr != nil {
 		return pagination.Result[domain.Category]{}, m.findAllErr
 	}
 	all := make([]domain.Category, 0, len(m.categories))
 	for _, c := range m.categories {
-		all = append(all, c)
+		if q.Search == "" || containsFold(c.Name, q.Search) {
+			all = append(all, c)
+		}
 	}
 	sort.Slice(all, func(i, j int) bool { return all[i].ID < all[j].ID })
 
-	p = p.Normalize()
+	p := q.Params.Normalize()
 	start := min(p.Offset(), len(all))
 	end := min(start+p.Limit(), len(all))
 	return pagination.NewResult(all[start:end], int64(len(all)), p), nil

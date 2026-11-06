@@ -8,11 +8,13 @@ import (
 	"testing"
 )
 
+func query(p pagination.Params) domain.FindAllQuery { return domain.FindAllQuery{Params: p} }
+
 func TestListUseCase_Execute(t *testing.T) {
 	t.Run("retorna lista vacía sin error", func(t *testing.T) {
 		uc := appCategory.NewListUseCase(newMockRepo())
 
-		result, err := uc.Execute(pagination.Params{})
+		result, err := uc.Execute(query(pagination.Params{}))
 
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -28,7 +30,7 @@ func TestListUseCase_Execute(t *testing.T) {
 		repo.Save(&domain.Category{Name: "Ropa"})
 		uc := appCategory.NewListUseCase(repo)
 
-		result, err := uc.Execute(pagination.Params{})
+		result, err := uc.Execute(query(pagination.Params{}))
 
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -45,7 +47,7 @@ func TestListUseCase_Execute(t *testing.T) {
 		}
 		uc := appCategory.NewListUseCase(repo)
 
-		result, err := uc.Execute(pagination.Params{Page: 3, PageSize: 2})
+		result, err := uc.Execute(query(pagination.Params{Page: 3, PageSize: 2}))
 
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -61,7 +63,7 @@ func TestListUseCase_Execute(t *testing.T) {
 	t.Run("normaliza parámetros inválidos", func(t *testing.T) {
 		uc := appCategory.NewListUseCase(newMockRepo())
 
-		result, _ := uc.Execute(pagination.Params{Page: -1, PageSize: 9999})
+		result, _ := uc.Execute(query(pagination.Params{Page: -1, PageSize: 9999}))
 
 		if result.Page != 1 || result.PageSize != pagination.MaxPageSize {
 			t.Errorf("got page=%d size=%d", result.Page, result.PageSize)
@@ -73,7 +75,7 @@ func TestListUseCase_Execute(t *testing.T) {
 		repo.findAllErr = errors.New("db error")
 		uc := appCategory.NewListUseCase(repo)
 
-		_, err := uc.Execute(pagination.Params{})
+		_, err := uc.Execute(query(pagination.Params{}))
 
 		if err == nil {
 			t.Fatal("expected error, got nil")

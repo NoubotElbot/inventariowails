@@ -40,21 +40,42 @@ func (r categoryRow) toDomain() *domain.Category {
 
 // --- implementación ---
 
-func (r *categoryRepo) FindAll(p pagination.Params) (pagination.Result[domain.Category], error) {
-	p = p.Normalize()
+func (r *categoryRepo) FindAll(q domain.FindAllQuery) (pagination.Result[domain.Category], error) {
+	p := q.Params.Normalize()
 
-	var total int64
-	if err := r.db.Get(&total, `SELECT COUNT(*) FROM categories`); err != nil {
-		return pagination.Result[domain.Category]{}, fmt.Errorf("category.FindAll count: %w", err)
+	var (
+		total      int64
+		rows       []categoryRow
+		countQuery string
+		listQuery  string
+		args       []any
+	)
+
+	if q.Search != "" {
+		like := "%" + q.Search + "%"
+		countQuery = `SELECT COUNT(*) FROM categories WHERE name LIKE ?`
+		listQuery = `SELECT id, name, created_at, updated_at
+		             FROM categories
+		             WHERE name LIKE ?
+		             ORDER BY id DESC
+		             LIMIT ? OFFSET ?`
+		args = []any{like, p.Limit(), p.Offset()}
+		if err := r.db.Get(&total, countQuery, like); err != nil {
+			return pagination.Result[domain.Category]{}, fmt.Errorf("category.FindAll count: %w", err)
+		}
+	} else {
+		countQuery = `SELECT COUNT(*) FROM categories`
+		listQuery = `SELECT id, name, created_at, updated_at
+		             FROM categories
+		             ORDER BY id DESC
+		             LIMIT ? OFFSET ?`
+		args = []any{p.Limit(), p.Offset()}
+		if err := r.db.Get(&total, countQuery); err != nil {
+			return pagination.Result[domain.Category]{}, fmt.Errorf("category.FindAll count: %w", err)
+		}
 	}
 
-	var rows []categoryRow
-	query := `SELECT id, name, created_at, updated_at
-	          FROM categories
-	          ORDER BY id DESC
-	          LIMIT ? OFFSET ?`
-
-	if err := r.db.Select(&rows, query, p.Limit(), p.Offset()); err != nil {
+	if err := r.db.Select(&rows, listQuery, args...); err != nil {
 		return pagination.Result[domain.Category]{}, fmt.Errorf("category.FindAll: %w", err)
 	}
 

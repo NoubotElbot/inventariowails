@@ -22,7 +22,7 @@ type App struct {
 }
 
 func NewApp() (*App, error) {
-	dbPath, err := resolveDBPath()
+	dbPath, err := ResolveDBPath()
 	if err != nil {
 		return nil, fmt.Errorf("resolviendo ruta de DB: %w", err)
 	}
@@ -46,7 +46,10 @@ func (a *App) Close() error {
 	return a.db.Close()
 }
 
-func resolveDBPath() (string, error) {
+func ResolveDBPath() (string, error) {
+	if p := os.Getenv("DB_PATH"); p != "" {
+		return p, nil
+	}
 	if os.Getenv("ENV") == "development" {
 		return "inventario_dev.db", nil
 	}

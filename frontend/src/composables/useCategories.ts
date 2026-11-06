@@ -59,6 +59,11 @@ export function useCategories() {
     await fetchAll();
   }
 
+  async function onSearch(value: string): Promise<void> {
+    pagination.setSearch(value);
+    await fetchAll();
+  }
+
   /** Crea la categoría. El llamador es responsable de recargar la lista. */
   async function create(name: string): Promise<boolean> {
     clearError();
@@ -111,11 +116,10 @@ export function useCategories() {
     items: readonly(items),
     loading,
     error: readonly(error),
-    first: pagination.first,
-    pageSize: pagination.pageSize,
-    total: pagination.total,
+    pagination: readonly(pagination),
     fetchAll,
     onPage,
+    onSearch,
     create,
     update,
     remove,

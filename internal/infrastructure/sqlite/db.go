@@ -6,12 +6,12 @@ import (
 	"log"
 
 	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 	"github.com/pressly/goose/v3"
 )
 
 func NewDB(dsn string, migrations fs.FS) (*sqlx.DB, error) {
-	db, err := sqlx.Open("sqlite3", dsn+"?_foreign_keys=on&_journal_mode=WAL")
+	db, err := sqlx.Open("sqlite", dsn+"?_foreign_keys=on&_journal_mode=WAL")
 	if err != nil {
 		return nil, fmt.Errorf("open sqlite: %w", err)
 	}
