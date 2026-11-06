@@ -1,15 +1,38 @@
 <script setup lang="ts">
-import AppSidebar from './AppSidebar.vue'
-import { RouterView } from 'vue-router'
+import { ref } from 'vue';
+import AppSidebar from './AppSidebar.vue';
+import ThemeToggle from '@/components/ThemeToggle.vue';
+import { SidebarLayout } from 'primevue';
+import SidebarIcon from '@primeicons/vue/sidebar';
+
+const open = ref(true);
 </script>
 
 <template>
-  <div class="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
-    <AppSidebar />
-    <main class="flex-1 overflow-y-auto">
-      <div class="p-6">
-        <RouterView />
+  <SidebarLayout class="h-screen">
+    <AppSidebar v-model:open="open" />
+
+    <SidebarMain>
+      <!-- Header -->
+      <header
+        class="flex h-12 items-center gap-2 border-b border-surface-200 px-4 dark:border-surface-700"
+      >
+        <!-- Botón colapsar -->
+        <SidebarTrigger target="main-nav" severity="secondary" :text="true" size="small">
+          <SidebarIcon />
+        </SidebarTrigger>
+
+        <span class="flex-1" />
+
+        <!-- ThemeToggle arriba a la derecha -->
+        <ThemeToggle />
+      </header>
+
+      <div class="flex-1 overflow-auto p-4">
+        <router-view />
       </div>
-    </main>
-  </div>
+    </SidebarMain>
+  </SidebarLayout>
+
+  <Toast position="bottom-right" />
 </template>

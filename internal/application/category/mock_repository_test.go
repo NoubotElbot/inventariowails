@@ -2,6 +2,8 @@ package category_test
 
 import (
 	domain "inventario/internal/domain/category"
+	"inventario/internal/domain/pagination"
+	"sort"
 )
 
 type mockRepo struct {
@@ -9,11 +11,12 @@ type mockRepo struct {
 	nextID     int64
 
 	// hooks para forzar errores puntuales
-	findAllErr  error
-	findByIDErr error
-	saveErr     error
-	updateErr   error
-	deleteErr   error
+	findAllErr     error
+	findOptionsErr error
+	findByIDErr    error
+	saveErr        error
+	updateErr      error
+	deleteErr      error
 }
 
 func newMockRepo() *mockRepo {
@@ -23,15 +26,32 @@ func newMockRepo() *mockRepo {
 	}
 }
 
-func (m *mockRepo) FindAll() ([]domain.Category, error) {
+func (m *mockRepo) FindAll(p pagination.Params) (pagination.Result[domain.Category], error) {
 	if m.findAllErr != nil {
-		return nil, m.findAllErr
+		return pagination.Result[domain.Category]{}, m.findAllErr
 	}
-	result := make([]domain.Category, 0, len(m.categories))
+	all := make([]domain.Category, 0, len(m.categories))
 	for _, c := range m.categories {
-		result = append(result, c)
+		all = append(all, c)
 	}
-	return result, nil
+	sort.Slice(all, func(i, j int) bool { return all[i].ID < all[j].ID })
+
+	p = p.Normalize()
+	start := min(p.Offset(), len(all))
+	end := min(start+p.Limit(), len(all))
+	return pagination.NewResult(all[start:end], int64(len(all)), p), nil
+}
+
+func (m *mockRepo) FindOptions() ([]domain.Option, error) {
+	if m.findOptionsErr != nil {
+		return nil, m.findOptionsErr
+	}
+	opts := make([]domain.Option, 0, len(m.categories))
+	for _, c := range m.categories {
+		opts = append(opts, domain.Option{ID: c.ID, Name: c.Name})
+	}
+	sort.Slice(opts, func(i, j int) bool { return opts[i].Name < opts[j].Name })
+	return opts, nil
 }
 
 func (m *mockRepo) FindByID(id int64) (*domain.Category, error) {

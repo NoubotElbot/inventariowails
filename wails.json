@@ -1,15 +1,14 @@
 {
-  "$schema": "https://wails.io/schemas/config.v2.json",
   "name": "inventariowails",
-  "outputfilename": "inventariowails",
-  "frontend:install": "pnpm install",
-  "frontend:build": "pnpm run build",
-  "frontend:dev:watcher": "pnpm run dev",
-  "frontend:dev:serverUrl": "auto",
-  "build:tags": "webkit2_41",
+  "frontend": {
+    "dir": "./frontend/src",
+    "install": "pnpm install",
+    "build": "pnpm run build",
+    "dev": "pnpm run dev",
+    "devServerUrl": "http://localhost:5173"
+  },
   "author": {
     "name": "Cristofer",
     "email": "66644622+NoubotElbot@users.noreply.github.com"
-  },
-  "wailsjsdir": "./frontend/src/wailsjs"
+  }
 }

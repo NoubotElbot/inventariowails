@@ -1,50 +1,82 @@
 <script setup lang="ts">
-import { useRouter, useRoute } from 'vue-router'
+import { Box, InfoCircle, ShoppingCart, Tag } from '@primeicons/vue';
+import { useRoute, useRouter } from 'vue-router';
 
-const router = useRouter()
-const route = useRoute()
+const open = defineModel<boolean>('open', { default: true });
+
+const router = useRouter();
+const route = useRoute();
 
 const nav = [
-  { label: 'Productos', icon: 'pi pi-box', path: '/products' },
-  { label: 'Categorías', icon: 'pi pi-tag', path: '/categories' },
-  { label: 'Ventas', icon: 'pi pi-shopping-cart', path: '/sales' },
-]
+  { label: 'Productos', icon: Box, path: '/products' },
+  { label: 'Categorías', icon: Tag, path: '/categories' },
+  { label: 'Ventas', icon: ShoppingCart, path: '/sales' },
+];
 
-const isActive = (path: string) => route.path.startsWith(path)
+const isActive = (path: string) => route.path.startsWith(path);
 </script>
 
 <template>
-  <aside
-    class="flex w-56 flex-col border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800"
+  <Sidebar
+    id="main-nav"
+    v-model:open="open"
+    collapsible="icon"
+    as="nav"
+    aria-label="Navegación principal"
   >
-    <!-- Logo -->
-    <div class="flex h-14 items-center border-b border-gray-200 px-5 dark:border-gray-700">
-      <span class="font-semibold tracking-tight text-gray-800 dark:text-gray-100">
-        Inventario
-      </span>
-    </div>
+    <SidebarSpacer />
+    <SidebarAside>
+      <SidebarPanel>
+        <!-- Logo -->
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton class="p-1!">
+                <div
+                  class="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary text-primary-contrast text-xs font-bold leading-none"
+                >
+                  I
+                </div>
+                <span class="font-semibold text-sm">Inventario</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
 
-    <!-- Nav -->
-    <nav class="flex-1 space-y-1 px-3 py-4">
-      <button
-        v-for="item in nav"
-        :key="item.path"
-        class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors"
-        :class="
-          isActive(item.path)
-            ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 font-medium'
-            : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
-        "
-        @click="router.push(item.path)"
-      >
-        <i :class="item.icon" />
-        {{ item.label }}
-      </button>
-    </nav>
+        <!-- Nav -->
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Menú</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem v-for="item in nav" :key="item.path">
+                  <SidebarMenuButton
+                    :isActive="isActive(item.path)"
+                    @click="router.push(item.path)"
+                  >
+                    <component :is="item.icon" />
+                    <span>{{ item.label }}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
 
-    <!-- Footer -->
-    <div class="border-t border-gray-200 p-4 dark:border-gray-700">
-      <span class="text-xs text-gray-400">v0.1.0</span>
-    </div>
-  </aside>
+        <!-- Footer -->
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton>
+                <InfoCircle class="size-6 shrink-0 text-xs" />
+                <span class="text-xs">v0.1.0</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+
+        <SidebarRail />
+      </SidebarPanel>
+    </SidebarAside>
+  </Sidebar>
 </template>

@@ -1,16 +1,23 @@
 @import 'tailwindcss';
-@import 'primeicons/primeicons.css';
-@import "tailwindcss-primeui";
+@import 'tailwindcss-primeui';
+
+@custom-variant dark (&:where(.app-dark, .app-dark *));
+
+:root {
+  color-scheme: light;
+}
+
+:root.app-dark {
+  color-scheme: dark;
+}
 
 html {
   background-color: rgba(27, 38, 54, 1);
-  text-align: center;
-  color: white;
 }
 
 body {
+  @apply bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100;
   margin: 0;
-  color: white;
   font-family:
     'Nunito',
     -apple-system,

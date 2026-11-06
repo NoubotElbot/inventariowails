@@ -19,6 +19,7 @@ func (a *App) wire() {
 	// --- Category ---
 	a.CategoryHandler = handler.NewCategoryHandler(
 		appCategory.NewListUseCase(categoryRepo),
+		appCategory.NewListOptionsUseCase(categoryRepo),
 		appCategory.NewFindUseCase(categoryRepo),
 		appCategory.NewCreateUseCase(categoryRepo),
 		appCategory.NewUpdateUseCase(categoryRepo),

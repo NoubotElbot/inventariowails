@@ -7,6 +7,7 @@ import (
 	"time"
 
 	domain "inventario/internal/domain/category"
+	"inventario/internal/domain/pagination"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -39,15 +40,22 @@ func (r categoryRow) toDomain() *domain.Category {
 
 // --- implementación ---
 
-func (r *categoryRepo) FindAll() ([]domain.Category, error) {
-	var rows []categoryRow
+func (r *categoryRepo) FindAll(p pagination.Params) (pagination.Result[domain.Category], error) {
+	p = p.Normalize()
 
+	var total int64
+	if err := r.db.Get(&total, `SELECT COUNT(*) FROM categories`); err != nil {
+		return pagination.Result[domain.Category]{}, fmt.Errorf("category.FindAll count: %w", err)
+	}
+
+	var rows []categoryRow
 	query := `SELECT id, name, created_at, updated_at
 	          FROM categories
-	          ORDER BY name ASC`
+	          ORDER BY id DESC
+	          LIMIT ? OFFSET ?`
 
-	if err := r.db.Select(&rows, query); err != nil {
-		return nil, fmt.Errorf("category.FindAll: %w", err)
+	if err := r.db.Select(&rows, query, p.Limit(), p.Offset()); err != nil {
+		return pagination.Result[domain.Category]{}, fmt.Errorf("category.FindAll: %w", err)
 	}
 
 	categories := make([]domain.Category, 0, len(rows))
@@ -55,7 +63,20 @@ func (r *categoryRepo) FindAll() ([]domain.Category, error) {
 		categories = append(categories, *row.toDomain())
 	}
 
-	return categories, nil
+	return pagination.NewResult(categories, total, p), nil
+}
+
+func (r *categoryRepo) FindOptions() ([]domain.Option, error) {
+	var rows []categoryRow
+	if err := r.db.Select(&rows, `SELECT id, name FROM categories ORDER BY name ASC`); err != nil {
+		return nil, fmt.Errorf("category.FindOptions: %w", err)
+	}
+
+	options := make([]domain.Option, 0, len(rows))
+	for _, row := range rows {
+		options = append(options, domain.Option{ID: row.ID, Name: row.Name})
+	}
+	return options, nil
 }
 
 func (r *categoryRepo) FindByID(id int64) (*domain.Category, error) {

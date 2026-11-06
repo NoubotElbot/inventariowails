@@ -1,4 +1,4 @@
-import { createRouter, createMemoryHistory } from 'vue-router'
+import { createRouter, createMemoryHistory } from 'vue-router';
 
 export const router = createRouter({
   history: createMemoryHistory(),
@@ -7,14 +7,14 @@ export const router = createRouter({
       path: '/',
       redirect: '/products',
     },
-    // {
-    //   path: '/categories',
-    //   component: () => import('@/views/categories/CategoryListView.vue'),
-    // },
-    // {
-    //   path: '/products',
-    //   component: () => import('@/views/products/ProductListView.vue'),
-    // },
+    {
+      path: '/categories',
+      component: () => import('@/views/categories/CategoryListView.vue'),
+    },
+    {
+      path: '/products',
+      component: () => import('@/views/products/ProductListView.vue'),
+    },
     // {
     //   path: '/products/new',
     //   component: () => import('@/views/products/ProductFormView.vue'),
@@ -40,4 +40,4 @@ export const router = createRouter({
     //   component: () => import('@/views/sales/SaleDetailView.vue'),
     // },
   ],
-})
+});

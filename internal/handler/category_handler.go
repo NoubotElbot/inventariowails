@@ -4,6 +4,7 @@ import (
 	"errors"
 	appCategory "inventario/internal/application/category"
 	domain "inventario/internal/domain/category"
+	"inventario/internal/domain/pagination"
 )
 
 // --- DTOs ---
@@ -13,6 +14,11 @@ type CategoryResponse struct {
 	Name      string `json:"name"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
+}
+
+type CategoryOptionResponse struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
 }
 
 type CreateCategoryRequest struct {
@@ -26,43 +32,54 @@ type UpdateCategoryRequest struct {
 // --- Handler ---
 
 type CategoryHandler struct {
-	list   *appCategory.ListUseCase
-	find   *appCategory.FindUseCase
-	create *appCategory.CreateUseCase
-	update *appCategory.UpdateUseCase
-	delete *appCategory.DeleteUseCase
+	list        *appCategory.ListUseCase
+	listOptions *appCategory.ListOptionsUseCase
+	find        *appCategory.FindUseCase
+	create      *appCategory.CreateUseCase
+	update      *appCategory.UpdateUseCase
+	delete      *appCategory.DeleteUseCase
 }
 
 func NewCategoryHandler(
 	list *appCategory.ListUseCase,
+	listOptions *appCategory.ListOptionsUseCase,
 	find *appCategory.FindUseCase,
 	create *appCategory.CreateUseCase,
 	update *appCategory.UpdateUseCase,
 	delete *appCategory.DeleteUseCase,
 ) *CategoryHandler {
 	return &CategoryHandler{
-		list:   list,
-		find:   find,
-		create: create,
-		update: update,
-		delete: delete,
+		list:        list,
+		listOptions: listOptions,
+		find:        find,
+		create:      create,
+		update:      update,
+		delete:      delete,
 	}
 }
 
 // --- métodos expuestos a Wails ---
 
-func (h *CategoryHandler) ListCategories() ([]CategoryResponse, error) {
-	categories, err := h.list.Execute()
+func (h *CategoryHandler) ListCategories(req pagination.Params) (PageResponse[CategoryResponse], error) {
+	page, err := h.list.Execute(req)
+	if err != nil {
+		return PageResponse[CategoryResponse]{}, err
+	}
+
+	return mapPage(page, toResponse), nil
+}
+
+func (h *CategoryHandler) ListCategoryOptions() ([]CategoryOptionResponse, error) {
+	options, err := h.listOptions.Execute()
 	if err != nil {
 		return nil, err
 	}
 
-	response := make([]CategoryResponse, 0, len(categories))
-	for _, c := range categories {
-		response = append(response, toResponse(c))
+	out := make([]CategoryOptionResponse, 0, len(options))
+	for _, o := range options {
+		out = append(out, CategoryOptionResponse{ID: o.ID, Name: o.Name})
 	}
-
-	return response, nil
+	return out, nil
 }
 
 func (h *CategoryHandler) GetCategory(id int64) (*CategoryResponse, error) {
@@ -83,7 +100,7 @@ func (h *CategoryHandler) CreateCategory(req CreateCategoryRequest) (*CategoryRe
 		Name: req.Name,
 	})
 	if err != nil {
-		return nil, mapError(err)
+		return nil, err
 	}
 
 	r := toResponse(*c)
@@ -96,7 +113,7 @@ func (h *CategoryHandler) UpdateCategory(id int64, req UpdateCategoryRequest) (*
 		Name: req.Name,
 	})
 	if err != nil {
-		return nil, mapError(err)
+		return nil, err
 	}
 
 	r := toResponse(*c)
@@ -104,7 +121,7 @@ func (h *CategoryHandler) UpdateCategory(id int64, req UpdateCategoryRequest) (*
 }
 
 func (h *CategoryHandler) DeleteCategory(id int64) error {
-	return mapError(h.delete.Execute(id))
+	return h.delete.Execute(id)
 }
 
 // --- helpers privados ---
@@ -115,21 +132,5 @@ func toResponse(c domain.Category) CategoryResponse {
 		Name:      c.Name,
 		CreatedAt: c.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		UpdatedAt: c.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
-	}
-}
-
-func mapError(err error) error {
-	if err == nil {
-		return nil
-	}
-	switch {
-	case errors.Is(err, domain.ErrNotFound):
-		return errors.New("categoría no encontrada")
-	case errors.Is(err, domain.ErrNameRequired):
-		return errors.New("el nombre es requerido")
-	case errors.Is(err, domain.ErrNameDuplicate):
-		return errors.New("ya existe una categoría con ese nombre")
-	default:
-		return errors.New("error interno del servidor")
 	}
 }

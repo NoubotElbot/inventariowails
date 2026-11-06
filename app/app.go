@@ -1,7 +1,6 @@
 package app
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -14,53 +13,53 @@ import (
 )
 
 type App struct {
-	db              *sqlx.DB
+	db *sqlx.DB
+
 	CategoryHandler *handler.CategoryHandler
 	ProductHandler  *handler.ProductHandler
 	StockHandler    *handler.StockHandler
 	SaleHandler     *handler.SaleHandler
 }
 
-func NewApp() *App {
+func NewApp() (*App, error) {
 	dbPath, err := resolveDBPath()
 	if err != nil {
-		fmt.Printf("error resolviendo ruta DB: %v\n", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("resolviendo ruta de DB: %w", err)
 	}
 
 	db, err := sqlite.NewDB(dbPath, database.Migrations)
 	if err != nil {
-		fmt.Printf("error inicializando DB: %v\n", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("inicializando DB: %w", err)
 	}
 
-	app := &App{db: db}
-	app.wire()
-	return app
+	a := &App{db: db}
+	a.wire()
+
+	return a, nil
 }
 
-func (a *App) Startup(ctx context.Context) {}
-
-func (a *App) Shutdown(ctx context.Context) {
-	if a.db != nil {
-		_ = a.db.Close()
+func (a *App) Close() error {
+	if a.db == nil {
+		return nil
 	}
+
+	return a.db.Close()
 }
 
 func resolveDBPath() (string, error) {
-	// En desarrollo usa la raíz del proyecto
 	if os.Getenv("ENV") == "development" {
 		return "inventario_dev.db", nil
 	}
 
-	// En producción usa el directorio del usuario
 	dataDir, err := os.UserConfigDir()
 	if err != nil {
 		return "", err
 	}
+
 	appDir := filepath.Join(dataDir, "inventario")
 	if err := os.MkdirAll(appDir, 0755); err != nil {
 		return "", err
 	}
+
 	return filepath.Join(appDir, "inventario.db"), nil
 }

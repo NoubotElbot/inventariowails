@@ -1,14 +1,13 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import PrimeVue from 'primevue/config'
-import Aura from '@primeuix/themes/aura' // ← cambio aquí
-import ToastService from 'primevue/toastservice'
-import ConfirmationService from 'primevue/confirmationservice'
-import 'primeicons/primeicons.css'
-import { router } from '@/router'
-import App from './app/App.vue'
-import './style.css'
-import { definePreset } from '@primeuix/themes'
+import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+import PrimeVue from 'primevue/config';
+import Aura from '@primeuix/themes/aura'; // ← cambio aquí
+import ToastService from 'primevue/toastservice';
+import ConfirmationService from 'primevue/confirmationservice';
+import { router } from '@/router';
+import App from './app/App.vue';
+import './style.css';
+import { definePreset } from '@primeuix/themes';
 
 const Noir = definePreset(Aura, {
   semantic: {
@@ -36,22 +35,22 @@ const Noir = definePreset(Aura, {
       focusColor: 'light-dark(#ffffff, {primary.950})',
     },
   },
-})
+});
 
-const app = createApp(App)
+const app = createApp(App);
 
-app.use(createPinia())
-app.use(router)
+app.use(createPinia());
+app.use(router);
 app.use(PrimeVue, {
   license: import.meta.env.VITE_PRIMEUI_LICENSE_KEY,
   theme: {
     preset: Noir,
     options: {
-      darkModeSelector: '.dark',
+      darkModeSelector: '.app-dark',
     },
   },
-})
-app.use(ToastService)
-app.use(ConfirmationService)
+});
+app.use(ToastService);
+app.use(ConfirmationService);
 
-app.mount('#app')
+app.mount('#app');

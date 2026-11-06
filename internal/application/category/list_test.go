@@ -4,21 +4,21 @@ import (
 	"errors"
 	appCategory "inventario/internal/application/category"
 	domain "inventario/internal/domain/category"
+	"inventario/internal/domain/pagination"
 	"testing"
 )
 
 func TestListUseCase_Execute(t *testing.T) {
 	t.Run("retorna lista vacía sin error", func(t *testing.T) {
-		repo := newMockRepo()
-		uc := appCategory.NewListUseCase(repo)
+		uc := appCategory.NewListUseCase(newMockRepo())
 
-		result, err := uc.Execute()
+		result, err := uc.Execute(pagination.Params{})
 
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if len(result) != 0 {
-			t.Errorf("got %d items, want 0", len(result))
+		if len(result.Items) != 0 || result.Total != 0 {
+			t.Errorf("got %d items / total %d, want 0", len(result.Items), result.Total)
 		}
 	})
 
@@ -28,13 +28,43 @@ func TestListUseCase_Execute(t *testing.T) {
 		repo.Save(&domain.Category{Name: "Ropa"})
 		uc := appCategory.NewListUseCase(repo)
 
-		result, err := uc.Execute()
+		result, err := uc.Execute(pagination.Params{})
 
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if len(result) != 2 {
-			t.Errorf("got %d items, want 2", len(result))
+		if len(result.Items) != 2 || result.Total != 2 {
+			t.Errorf("got %d items / total %d, want 2", len(result.Items), result.Total)
+		}
+	})
+
+	t.Run("pagina los resultados", func(t *testing.T) {
+		repo := newMockRepo()
+		for _, n := range []string{"A", "B", "C", "D", "E"} {
+			repo.Save(&domain.Category{Name: n})
+		}
+		uc := appCategory.NewListUseCase(repo)
+
+		result, err := uc.Execute(pagination.Params{Page: 3, PageSize: 2})
+
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if len(result.Items) != 1 || result.Items[0].Name != "E" {
+			t.Errorf("unexpected items: %+v", result.Items)
+		}
+		if result.Total != 5 || result.TotalPages != 3 || result.Page != 3 {
+			t.Errorf("unexpected metadata: %+v", result)
+		}
+	})
+
+	t.Run("normaliza parámetros inválidos", func(t *testing.T) {
+		uc := appCategory.NewListUseCase(newMockRepo())
+
+		result, _ := uc.Execute(pagination.Params{Page: -1, PageSize: 9999})
+
+		if result.Page != 1 || result.PageSize != pagination.MaxPageSize {
+			t.Errorf("got page=%d size=%d", result.Page, result.PageSize)
 		}
 	})
 
@@ -43,7 +73,7 @@ func TestListUseCase_Execute(t *testing.T) {
 		repo.findAllErr = errors.New("db error")
 		uc := appCategory.NewListUseCase(repo)
 
-		_, err := uc.Execute()
+		_, err := uc.Execute(pagination.Params{})
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
