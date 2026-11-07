@@ -10,6 +10,7 @@ import (
 	"inventario/internal/infrastructure/sqlite"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/joho/godotenv"
 )
 
 type App struct {
@@ -47,6 +48,8 @@ func (a *App) Close() error {
 }
 
 func ResolveDBPath() (string, error) {
+	_ = godotenv.Load()
+
 	if p := os.Getenv("DB_PATH"); p != "" {
 		return p, nil
 	}
