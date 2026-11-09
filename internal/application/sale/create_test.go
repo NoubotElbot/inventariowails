@@ -14,7 +14,7 @@ func TestCreateUseCase_Execute(t *testing.T) {
 		p := &domainProduct.Product{
 			Name:   "Laptop",
 			Code:   "LAP-001",
-			Price:  999.99,
+			Price:  999,
 			Stock:  stock,
 			Active: active,
 		}
@@ -44,7 +44,7 @@ func TestCreateUseCase_Execute(t *testing.T) {
 		if len(result.Items) != 1 {
 			t.Errorf("got %d items, want 1", len(result.Items))
 		}
-		expectedTotal := 999.99 * 2
+		expectedTotal := float64(999) * 2
 		if result.Total != expectedTotal {
 			t.Errorf("got total %.2f, want %.2f", result.Total, expectedTotal)
 		}
@@ -55,7 +55,7 @@ func TestCreateUseCase_Execute(t *testing.T) {
 		productRepo := newMockProductRepo()
 		stockRepo := newMockStockRepo()
 		id1 := seedProduct(productRepo, 10, true)
-		p2 := &domainProduct.Product{Name: "Mouse", Code: "MOU-001", Price: 29.99, Stock: 5, Active: true}
+		p2 := &domainProduct.Product{Name: "Mouse", Code: "MOU-001", Price: 29, Stock: 5, Active: true}
 		productRepo.seed(p2)
 		uc := appSale.NewCreateUseCase(saleRepo, productRepo, stockRepo)
 
@@ -72,7 +72,7 @@ func TestCreateUseCase_Execute(t *testing.T) {
 		if len(result.Items) != 2 {
 			t.Errorf("got %d items, want 2", len(result.Items))
 		}
-		expectedTotal := 999.99 + (29.99 * 2)
+		expectedTotal := float64(999) + float64(29)*2
 		if result.Total != expectedTotal {
 			t.Errorf("got total %.2f, want %.2f", result.Total, expectedTotal)
 		}

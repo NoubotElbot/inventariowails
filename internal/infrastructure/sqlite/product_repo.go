@@ -7,6 +7,7 @@ import (
 	"time"
 
 	domain "inventario/internal/domain/product"
+	"inventario/internal/domain/pagination"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -27,7 +28,7 @@ type productRow struct {
 	Name       string    `db:"name"`
 	Code       string    `db:"code"`
 	Barcode    string    `db:"barcode"`
-	Price      float64   `db:"price"`
+	Price      int64     `db:"price"`
 	Stock      int       `db:"stock"`
 	MinStock   int       `db:"min_stock"`
 	Active     bool      `db:"active"`
@@ -53,16 +54,32 @@ func (r productRow) toDomain() *domain.Product {
 
 // --- implementación ---
 
-func (r *productRepo) FindAll() ([]domain.Product, error) {
+func (r *productRepo) FindAll(q domain.FindAllQuery) (pagination.Result[domain.Product], error) {
+	p := q.Params.Normalize()
+
+	const cols = `id, category_id, name, code, barcode, price, stock, min_stock, active, created_at, updated_at`
+
+	var wb whereBuilder
+	if q.Search != "" {
+		like := "%" + q.Search + "%"
+		wb.And(`(name LIKE ? OR code LIKE ? OR barcode LIKE ?)`, like, like, like)
+	}
+	if len(q.CategoryIDs) > 0 {
+		if err := wb.In("category_id", q.CategoryIDs); err != nil {
+			return pagination.Result[domain.Product]{}, fmt.Errorf("product.FindAll build in: %w", err)
+		}
+	}
+
+	var total int64
+	if err := r.db.Get(&total, "SELECT COUNT(*) FROM products "+wb.SQL(), wb.Args()...); err != nil {
+		return pagination.Result[domain.Product]{}, fmt.Errorf("product.FindAll count: %w", err)
+	}
+
 	var rows []productRow
-
-	query := `SELECT id, category_id, name, code, barcode, price,
-	                 stock, min_stock, active, created_at, updated_at
-	          FROM products
-	          ORDER BY name ASC`
-
-	if err := r.db.Select(&rows, query); err != nil {
-		return nil, fmt.Errorf("product.FindAll: %w", err)
+	if err := r.db.Select(&rows,
+		"SELECT "+cols+" FROM products "+wb.SQL()+" ORDER BY name ASC LIMIT ? OFFSET ?",
+		append(wb.Args(), p.Limit(), p.Offset())...); err != nil {
+		return pagination.Result[domain.Product]{}, fmt.Errorf("product.FindAll: %w", err)
 	}
 
 	products := make([]domain.Product, 0, len(rows))
@@ -70,7 +87,7 @@ func (r *productRepo) FindAll() ([]domain.Product, error) {
 		products = append(products, *row.toDomain())
 	}
 
-	return products, nil
+	return pagination.NewResult(products, total, p), nil
 }
 
 func (r *productRepo) FindByID(id int64) (*domain.Product, error) {

@@ -12,7 +12,7 @@ func TestCreateUseCase_Execute(t *testing.T) {
 		return appProduct.CreateInput{
 			Name:  "Laptop",
 			Code:  "LAP-001",
-			Price: 999.99,
+			Price: 999,
 			Stock: 10,
 		}
 	}

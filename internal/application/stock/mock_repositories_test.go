@@ -3,6 +3,7 @@ package stock_test
 import (
 	domainProduct "inventario/internal/domain/product"
 	domain "inventario/internal/domain/stock"
+	"inventario/internal/domain/pagination"
 )
 
 // --- mock stock repo ---
@@ -63,7 +64,9 @@ func (m *mockProductRepo) seed(p *domainProduct.Product) {
 	m.nextID++
 }
 
-func (m *mockProductRepo) FindAll() ([]domainProduct.Product, error) { return nil, nil }
+func (m *mockProductRepo) FindAll(q domainProduct.FindAllQuery) (pagination.Result[domainProduct.Product], error) {
+	return pagination.Result[domainProduct.Product]{}, nil
+}
 
 func (m *mockProductRepo) FindByID(id int64) (*domainProduct.Product, error) {
 	if m.findByIDErr != nil {

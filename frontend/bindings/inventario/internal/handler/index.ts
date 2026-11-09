@@ -20,6 +20,7 @@ export {
     CreateProductRequest,
     CreateSaleRequest,
     ListCategoriesRequest,
+    ListProductsRequest,
     PageResponse,
     ProductResponse,
     SaleItemRequest,

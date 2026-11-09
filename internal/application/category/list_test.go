@@ -9,6 +9,9 @@ import (
 )
 
 func query(p pagination.Params) domain.FindAllQuery { return domain.FindAllQuery{Params: p} }
+func queryInactive(p pagination.Params) domain.FindAllQuery {
+	return domain.FindAllQuery{Params: p, OnlyInactive: true}
+}
 
 func TestListUseCase_Execute(t *testing.T) {
 	t.Run("retorna lista vacía sin error", func(t *testing.T) {
@@ -79,6 +82,44 @@ func TestListUseCase_Execute(t *testing.T) {
 
 		if err == nil {
 			t.Fatal("expected error, got nil")
+		}
+	})
+
+	t.Run("excluye categorías eliminadas por defecto", func(t *testing.T) {
+		repo := newMockRepo()
+		active := &domain.Category{Name: "Activa"}
+		inactive := &domain.Category{Name: "Inactiva"}
+		repo.Save(active)
+		repo.Save(inactive)
+		repo.SoftDelete(inactive.ID)
+		uc := appCategory.NewListUseCase(repo)
+
+		result, err := uc.Execute(query(pagination.Params{}))
+
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if result.Total != 1 || result.Items[0].Name != "Activa" {
+			t.Errorf("expected only active categories, got %+v", result.Items)
+		}
+	})
+
+	t.Run("OnlyInactive retorna solo categorías eliminadas", func(t *testing.T) {
+		repo := newMockRepo()
+		active := &domain.Category{Name: "Activa"}
+		inactive := &domain.Category{Name: "Inactiva"}
+		repo.Save(active)
+		repo.Save(inactive)
+		repo.SoftDelete(inactive.ID)
+		uc := appCategory.NewListUseCase(repo)
+
+		result, err := uc.Execute(queryInactive(pagination.Params{}))
+
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if result.Total != 1 || result.Items[0].Name != "Inactiva" {
+			t.Errorf("expected only inactive categories, got %+v", result.Items)
 		}
 	})
 }

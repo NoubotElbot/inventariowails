@@ -16,6 +16,7 @@
       "DOM"
     ],
     "skipLibCheck": true,
+    "allowJs": true,
     "noEmit": true,
     "paths": {
       "@/*": [

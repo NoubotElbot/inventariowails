@@ -10,7 +10,7 @@ func TestProduct_Validate(t *testing.T) {
 		return product.Product{
 			Name:  "Laptop",
 			Code:  "LAP-001",
-			Price: 999.99,
+			Price: 999,
 			Stock: 10,
 		}
 	}

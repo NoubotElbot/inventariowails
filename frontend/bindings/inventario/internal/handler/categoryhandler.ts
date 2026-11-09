@@ -37,6 +37,10 @@ export function ListCategoryOptions(): $CancellablePromise<$models.CategoryOptio
     });
 }
 
+export function RestoreCategory(id: number): $CancellablePromise<void> {
+    return $Call.ByID(2346220707, id);
+}
+
 export function UpdateCategory(id: number, req: $models.UpdateCategoryRequest): $CancellablePromise<$models.CategoryResponse | null> {
     return $Call.ByID(145739342, id, req).then(($result: any) => {
         return $$createType1($result);

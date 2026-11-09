@@ -2,6 +2,9 @@ package product_test
 
 import (
 	domain "inventario/internal/domain/product"
+	"inventario/internal/domain/pagination"
+	"sort"
+	"strings"
 )
 
 type mockRepo struct {
@@ -24,15 +27,42 @@ func newMockRepo() *mockRepo {
 	}
 }
 
-func (m *mockRepo) FindAll() ([]domain.Product, error) {
+func (m *mockRepo) FindAll(q domain.FindAllQuery) (pagination.Result[domain.Product], error) {
 	if m.findAllErr != nil {
-		return nil, m.findAllErr
+		return pagination.Result[domain.Product]{}, m.findAllErr
 	}
-	result := make([]domain.Product, 0, len(m.products))
+	all := make([]domain.Product, 0, len(m.products))
 	for _, p := range m.products {
-		result = append(result, p)
+		if q.Search != "" {
+			needle := strings.ToLower(q.Search)
+			if !strings.Contains(strings.ToLower(p.Name), needle) &&
+				!strings.Contains(strings.ToLower(p.Code), needle) &&
+				!strings.Contains(strings.ToLower(p.Barcode), needle) {
+				continue
+			}
+		}
+		if len(q.CategoryIDs) > 0 {
+			match := false
+			if p.CategoryID != nil {
+				for _, id := range q.CategoryIDs {
+					if *p.CategoryID == id {
+						match = true
+						break
+					}
+				}
+			}
+			if !match {
+				continue
+			}
+		}
+		all = append(all, p)
 	}
-	return result, nil
+	sort.Slice(all, func(i, j int) bool { return all[i].ID < all[j].ID })
+
+	p := q.Params.Normalize()
+	start := min(p.Offset(), len(all))
+	end := min(start+p.Limit(), len(all))
+	return pagination.NewResult(all[start:end], int64(len(all)), p), nil
 }
 
 func (m *mockRepo) FindByID(id int64) (*domain.Product, error) {

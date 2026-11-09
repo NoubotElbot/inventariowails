@@ -2,6 +2,7 @@ import {
   CreateCategory,
   DeleteCategory,
   ListCategories,
+  RestoreCategory,
   UpdateCategory,
 } from 'bindings/inventario/internal/handler/categoryhandler';
 
@@ -15,4 +16,6 @@ export const categoryService = {
   update: (id: number, name: string) => UpdateCategory(id, { name }),
 
   remove: (id: number) => DeleteCategory(id),
+
+  restore: (id: number) => RestoreCategory(id),
 };

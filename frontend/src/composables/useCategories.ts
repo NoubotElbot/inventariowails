@@ -1,4 +1,4 @@
-import { computed, readonly, ref } from 'vue';
+import { computed, readonly, ref, watch } from 'vue';
 import type { DataTablePageEvent } from 'primevue/datatable';
 
 import { usePagination } from '@/composables/usePagination';
@@ -9,6 +9,7 @@ export function useCategories() {
   const items = ref<Category[]>([]);
   const pending = ref(0);
   const error = ref<string | null>(null);
+  const onlyInactive = ref(false);
   const pagination = usePagination();
 
   const loading = computed(() => pending.value > 0);
@@ -32,7 +33,7 @@ export function useCategories() {
   }
 
   async function refresh(): Promise<void> {
-    const res = await categoryService.list(pagination.params.value);
+    const res = await categoryService.list({ ...pagination.params.value, only_inactive: onlyInactive.value });
 
     // La página pedida ya no existe (p. ej. se borró el último elemento): retrocede.
     if (res.items.length === 0 && res.total > 0 && pagination.page.value > 1) {
@@ -112,17 +113,40 @@ export function useCategories() {
     }
   }
 
+  async function restore(id: number): Promise<boolean> {
+    clearError();
+
+    try {
+      await withLoading(async () => {
+        await categoryService.restore(id);
+        await refresh();
+      });
+
+      return true;
+    } catch (cause) {
+      setError(cause);
+      return false;
+    }
+  }
+
+  watch(onlyInactive, () => {
+    pagination.goTo(1);
+    fetchAll();
+  });
+
   return {
     items: readonly(items),
     loading,
     error: readonly(error),
     pagination: readonly(pagination),
+    onlyInactive,
     fetchAll,
     onPage,
     onSearch,
     create,
     update,
     remove,
+    restore,
     clearError,
   };
 }

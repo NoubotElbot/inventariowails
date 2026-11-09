@@ -4,6 +4,7 @@ import (
 	domainProduct "inventario/internal/domain/product"
 	domainSale "inventario/internal/domain/sale"
 	domainStock "inventario/internal/domain/stock"
+	"inventario/internal/domain/pagination"
 )
 
 // --- mock sale repo ---
@@ -80,7 +81,9 @@ func (m *mockProductRepo) seed(p *domainProduct.Product) {
 	m.nextID++
 }
 
-func (m *mockProductRepo) FindAll() ([]domainProduct.Product, error) { return nil, nil }
+func (m *mockProductRepo) FindAll(q domainProduct.FindAllQuery) (pagination.Result[domainProduct.Product], error) {
+	return pagination.Result[domainProduct.Product]{}, nil
+}
 func (m *mockProductRepo) FindByCode(code string) (*domainProduct.Product, error) {
 	return nil, domainProduct.ErrNotFound
 }

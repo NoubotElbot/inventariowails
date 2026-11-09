@@ -9,17 +9,19 @@ import (
 
 // ListCategoriesRequest carries pagination and optional search filter.
 type ListCategoriesRequest struct {
-	Search string `json:"search"`
+	Search       string `json:"search"`
+	OnlyInactive bool   `json:"only_inactive"`
 	pagination.Params
 }
 
 // --- DTOs ---
 
 type CategoryResponse struct {
-	ID        int64  `json:"id"`
-	Name      string `json:"name"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	ID        int64   `json:"id"`
+	Name      string  `json:"name"`
+	CreatedAt string  `json:"created_at"`
+	UpdatedAt string  `json:"updated_at"`
+	DeletedAt *string `json:"deleted_at,omitempty"`
 }
 
 type CategoryOptionResponse struct {
@@ -44,6 +46,7 @@ type CategoryHandler struct {
 	create      *appCategory.CreateUseCase
 	update      *appCategory.UpdateUseCase
 	delete      *appCategory.DeleteUseCase
+	restore     *appCategory.RestoreUseCase
 }
 
 func NewCategoryHandler(
@@ -53,6 +56,7 @@ func NewCategoryHandler(
 	create *appCategory.CreateUseCase,
 	update *appCategory.UpdateUseCase,
 	delete *appCategory.DeleteUseCase,
+	restore *appCategory.RestoreUseCase,
 ) *CategoryHandler {
 	return &CategoryHandler{
 		list:        list,
@@ -61,6 +65,7 @@ func NewCategoryHandler(
 		create:      create,
 		update:      update,
 		delete:      delete,
+		restore:     restore,
 	}
 }
 
@@ -68,8 +73,9 @@ func NewCategoryHandler(
 
 func (h *CategoryHandler) ListCategories(req ListCategoriesRequest) (PageResponse[CategoryResponse], error) {
 	page, err := h.list.Execute(domain.FindAllQuery{
-		Search: req.Search,
-		Params: req.Params,
+		Search:       req.Search,
+		OnlyInactive: req.OnlyInactive,
+		Params:       req.Params,
 	})
 	if err != nil {
 		return PageResponse[CategoryResponse]{}, err
@@ -133,13 +139,22 @@ func (h *CategoryHandler) DeleteCategory(id int64) error {
 	return h.delete.Execute(id)
 }
 
+func (h *CategoryHandler) RestoreCategory(id int64) error {
+	return h.restore.Execute(id)
+}
+
 // --- helpers privados ---
 
 func toResponse(c domain.Category) CategoryResponse {
-	return CategoryResponse{
+	r := CategoryResponse{
 		ID:        c.ID,
 		Name:      c.Name,
 		CreatedAt: c.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		UpdatedAt: c.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}
+	if c.DeletedAt != nil {
+		s := c.DeletedAt.Format("2006-01-02T15:04:05Z07:00")
+		r.DeletedAt = &s
+	}
+	return r
 }

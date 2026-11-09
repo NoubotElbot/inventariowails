@@ -8,7 +8,7 @@ import (
 )
 
 func TestDeleteUseCase_Execute(t *testing.T) {
-	t.Run("elimina categoría existente", func(t *testing.T) {
+	t.Run("elimina suavemente categoría existente", func(t *testing.T) {
 		repo := newMockRepo()
 		c := &domain.Category{Name: "Electrónica"}
 		repo.Save(c)
@@ -20,9 +20,12 @@ func TestDeleteUseCase_Execute(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		_, err = repo.FindByID(c.ID)
-		if !errors.Is(err, domain.ErrNotFound) {
-			t.Error("expected category to be deleted")
+		stored, findErr := repo.FindByID(c.ID)
+		if findErr != nil {
+			t.Fatalf("unexpected error finding category: %v", findErr)
+		}
+		if stored.DeletedAt == nil {
+			t.Error("expected category to be soft-deleted")
 		}
 	})
 
@@ -37,11 +40,25 @@ func TestDeleteUseCase_Execute(t *testing.T) {
 		}
 	})
 
+	t.Run("falla si la categoría ya está eliminada", func(t *testing.T) {
+		repo := newMockRepo()
+		c := &domain.Category{Name: "Electrónica"}
+		repo.Save(c)
+		uc := appCategory.NewDeleteUseCase(repo)
+		uc.Execute(c.ID)
+
+		err := uc.Execute(c.ID)
+
+		if !errors.Is(err, domain.ErrAlreadyDeleted) {
+			t.Errorf("got %v, want ErrAlreadyDeleted", err)
+		}
+	})
+
 	t.Run("propaga error del repositorio en delete", func(t *testing.T) {
 		repo := newMockRepo()
 		c := &domain.Category{Name: "Electrónica"}
 		repo.Save(c)
-		repo.deleteErr = errors.New("db error")
+		repo.softDeleteErr = errors.New("db error")
 		uc := appCategory.NewDeleteUseCase(repo)
 
 		err := uc.Execute(c.ID)

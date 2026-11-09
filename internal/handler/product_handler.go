@@ -4,6 +4,7 @@ import (
 	"errors"
 	appProduct "inventario/internal/application/product"
 	domain "inventario/internal/domain/product"
+	"inventario/internal/domain/pagination"
 )
 
 // --- DTOs ---
@@ -14,7 +15,7 @@ type ProductResponse struct {
 	Name       string  `json:"name"`
 	Code       string  `json:"code"`
 	Barcode    string  `json:"barcode"`
-	Price      float64 `json:"price"`
+	Price      int64   `json:"price"`
 	Stock      int     `json:"stock"`
 	MinStock   int     `json:"min_stock"`
 	Active     bool    `json:"active"`
@@ -23,23 +24,29 @@ type ProductResponse struct {
 	UpdatedAt  string  `json:"updated_at"`
 }
 
+type ListProductsRequest struct {
+	Search      string  `json:"search"`
+	CategoryIDs []int64 `json:"category_ids"`
+	pagination.Params
+}
+
 type CreateProductRequest struct {
-	CategoryID *int64  `json:"category_id"`
-	Name       string  `json:"name"`
-	Code       string  `json:"code"`
-	Barcode    string  `json:"barcode"`
-	Price      float64 `json:"price"`
-	Stock      int     `json:"stock"`
-	MinStock   int     `json:"min_stock"`
+	CategoryID *int64 `json:"category_id"`
+	Name       string `json:"name"`
+	Code       string `json:"code"`
+	Barcode    string `json:"barcode"`
+	Price      int64  `json:"price"`
+	Stock      int    `json:"stock"`
+	MinStock   int    `json:"min_stock"`
 }
 
 type UpdateProductRequest struct {
-	CategoryID *int64  `json:"category_id"`
-	Name       string  `json:"name"`
-	Code       string  `json:"code"`
-	Barcode    string  `json:"barcode"`
-	Price      float64 `json:"price"`
-	MinStock   int     `json:"min_stock"`
+	CategoryID *int64 `json:"category_id"`
+	Name       string `json:"name"`
+	Code       string `json:"code"`
+	Barcode    string `json:"barcode"`
+	Price      int64  `json:"price"`
+	MinStock   int    `json:"min_stock"`
 }
 
 // --- Handler ---
@@ -73,18 +80,17 @@ func NewProductHandler(
 
 // --- métodos expuestos a Wails ---
 
-func (h *ProductHandler) ListProducts() ([]ProductResponse, error) {
-	products, err := h.list.Execute()
+func (h *ProductHandler) ListProducts(req ListProductsRequest) (PageResponse[ProductResponse], error) {
+	q := domain.FindAllQuery{
+		Search:      req.Search,
+		CategoryIDs: req.CategoryIDs,
+		Params:      req.Params,
+	}
+	page, err := h.list.Execute(q)
 	if err != nil {
-		return nil, err
+		return PageResponse[ProductResponse]{}, err
 	}
-
-	response := make([]ProductResponse, 0, len(products))
-	for _, p := range products {
-		response = append(response, toProductResponse(p))
-	}
-
-	return response, nil
+	return mapPage(page, toProductResponse), nil
 }
 
 func (h *ProductHandler) GetProduct(id int64) (*ProductResponse, error) {

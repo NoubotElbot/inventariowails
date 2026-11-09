@@ -7,4 +7,9 @@ type Category struct {
 	Name      string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	DeletedAt *time.Time
+}
+
+func (c *Category) IsActive() bool {
+	return c.DeletedAt == nil
 }

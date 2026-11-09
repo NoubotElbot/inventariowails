@@ -24,6 +24,7 @@ func (a *App) wire() {
 		appCategory.NewCreateUseCase(categoryRepo),
 		appCategory.NewUpdateUseCase(categoryRepo),
 		appCategory.NewDeleteUseCase(categoryRepo),
+		appCategory.NewRestoreUseCase(categoryRepo),
 	)
 
 	// --- Product ---

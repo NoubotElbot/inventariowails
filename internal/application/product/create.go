@@ -12,7 +12,7 @@ type CreateInput struct {
 	Name       string
 	Code       string
 	Barcode    string
-	Price      float64
+	Price      int64
 	Stock      int
 	MinStock   int
 }

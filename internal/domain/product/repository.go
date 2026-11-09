@@ -1,7 +1,9 @@
 package product
 
+import "inventario/internal/domain/pagination"
+
 type Repository interface {
-	FindAll() ([]Product, error)
+	FindAll(q FindAllQuery) (pagination.Result[Product], error)
 	FindByID(id int64) (*Product, error)
 	FindByCode(code string) (*Product, error)
 	Save(p *Product) error
