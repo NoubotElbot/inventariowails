@@ -6,7 +6,7 @@ import (
 
 	"inventario/app"
 	"inventario/database"
-	"inventario/internal/infrastructure/sqlite"
+	"inventario/internal/platform/sqlite"
 
 	"github.com/joho/godotenv"
 )

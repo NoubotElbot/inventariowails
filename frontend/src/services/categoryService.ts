@@ -4,7 +4,7 @@ import {
   ListCategories,
   RestoreCategory,
   UpdateCategory,
-} from 'bindings/inventario/internal/handler/categoryhandler';
+} from 'bindings/inventario/internal/modules/category/handler/categoryhandler';
 
 import type { ListCategoriesRequest } from '@/types/pagination';
 

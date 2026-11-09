@@ -4,13 +4,13 @@ import {
   GetProduct,
   ListProducts,
   UpdateProduct,
-} from 'bindings/inventario/internal/handler/producthandler';
-import { ListCategoryOptions } from 'bindings/inventario/internal/handler/categoryhandler';
+} from 'bindings/inventario/internal/modules/product/handler/producthandler';
+import { ListCategoryOptions } from 'bindings/inventario/internal/modules/category/handler/categoryhandler';
 import type {
   CreateProductRequest,
   ListProductsRequest,
   UpdateProductRequest,
-} from 'bindings/inventario/internal/handler/models';
+} from 'bindings/inventario/internal/modules/product/handler/models';
 
 export const productService = {
   list: (req: ListProductsRequest) => ListProducts(req),
