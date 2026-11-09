@@ -271,7 +271,7 @@ go run ./cmd/seed
 Run the Go test suite:
 
 ```bash
-go test ./...
+go test -v ./internal/modules/.../application ./internal/modules/.../domain
 ```
 
 ## Configuration
