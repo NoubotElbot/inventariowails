@@ -23,10 +23,11 @@ func NewCategoryRepository(db *sqlx.DB) domain.Repository {
 // --- modelo de persistencia ---
 
 type categoryRow struct {
-	ID        int64     `db:"id"`
-	Name      string    `db:"name"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID        int64      `db:"id"`
+	Name      string     `db:"name"`
+	CreatedAt time.Time  `db:"created_at"`
+	UpdatedAt time.Time  `db:"updated_at"`
+	DeletedAt *time.Time `db:"deleted_at"`
 }
 
 func (r categoryRow) toDomain() *domain.Category {
@@ -35,6 +36,7 @@ func (r categoryRow) toDomain() *domain.Category {
 		Name:      r.Name,
 		CreatedAt: r.CreatedAt,
 		UpdatedAt: r.UpdatedAt,
+		DeletedAt: r.DeletedAt,
 	}
 }
 
@@ -43,39 +45,26 @@ func (r categoryRow) toDomain() *domain.Category {
 func (r *categoryRepo) FindAll(q domain.FindAllQuery) (pagination.Result[domain.Category], error) {
 	p := q.Params.Normalize()
 
-	var (
-		total      int64
-		rows       []categoryRow
-		countQuery string
-		listQuery  string
-		args       []any
-	)
-
-	if q.Search != "" {
-		like := "%" + q.Search + "%"
-		countQuery = `SELECT COUNT(*) FROM categories WHERE name LIKE ?`
-		listQuery = `SELECT id, name, created_at, updated_at
-		             FROM categories
-		             WHERE name LIKE ?
-		             ORDER BY id DESC
-		             LIMIT ? OFFSET ?`
-		args = []any{like, p.Limit(), p.Offset()}
-		if err := r.db.Get(&total, countQuery, like); err != nil {
-			return pagination.Result[domain.Category]{}, fmt.Errorf("category.FindAll count: %w", err)
-		}
+	var wb whereBuilder
+	if q.OnlyInactive {
+		wb.And("deleted_at IS NOT NULL")
 	} else {
-		countQuery = `SELECT COUNT(*) FROM categories`
-		listQuery = `SELECT id, name, created_at, updated_at
-		             FROM categories
-		             ORDER BY id DESC
-		             LIMIT ? OFFSET ?`
-		args = []any{p.Limit(), p.Offset()}
-		if err := r.db.Get(&total, countQuery); err != nil {
-			return pagination.Result[domain.Category]{}, fmt.Errorf("category.FindAll count: %w", err)
-		}
+		wb.And("deleted_at IS NULL")
+	}
+	if q.Search != "" {
+		wb.And("name LIKE ?", "%"+q.Search+"%")
 	}
 
-	if err := r.db.Select(&rows, listQuery, args...); err != nil {
+	var total int64
+	if err := r.db.Get(&total, "SELECT COUNT(*) FROM categories "+wb.SQL(), wb.Args()...); err != nil {
+		return pagination.Result[domain.Category]{}, fmt.Errorf("category.FindAll count: %w", err)
+	}
+
+	const cols = "id, name, created_at, updated_at, deleted_at"
+	var rows []categoryRow
+	if err := r.db.Select(&rows,
+		"SELECT "+cols+" FROM categories "+wb.SQL()+" ORDER BY id DESC LIMIT ? OFFSET ?",
+		append(wb.Args(), p.Limit(), p.Offset())...); err != nil {
 		return pagination.Result[domain.Category]{}, fmt.Errorf("category.FindAll: %w", err)
 	}
 
@@ -103,7 +92,7 @@ func (r *categoryRepo) FindOptions() ([]domain.Option, error) {
 func (r *categoryRepo) FindByID(id int64) (*domain.Category, error) {
 	var row categoryRow
 
-	query := `SELECT id, name, created_at, updated_at
+	query := `SELECT id, name, created_at, updated_at, deleted_at
 	          FROM categories
 	          WHERE id = ?`
 
@@ -174,17 +163,36 @@ func (r *categoryRepo) Update(c *domain.Category) error {
 	return nil
 }
 
-func (r *categoryRepo) Delete(id int64) error {
-	query := `DELETE FROM categories WHERE id = ?`
+func (r *categoryRepo) SoftDelete(id int64) error {
+	query := `UPDATE categories SET deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND deleted_at IS NULL`
 
 	result, err := r.db.Exec(query, id)
 	if err != nil {
-		return fmt.Errorf("category.Delete: %w", err)
+		return fmt.Errorf("category.SoftDelete: %w", err)
 	}
 
 	affected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("category.Delete rows affected: %w", err)
+		return fmt.Errorf("category.SoftDelete rows affected: %w", err)
+	}
+	if affected == 0 {
+		return domain.ErrNotFound
+	}
+
+	return nil
+}
+
+func (r *categoryRepo) Restore(id int64) error {
+	query := `UPDATE categories SET deleted_at = NULL WHERE id = ? AND deleted_at IS NOT NULL`
+
+	result, err := r.db.Exec(query, id)
+	if err != nil {
+		return fmt.Errorf("category.Restore: %w", err)
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("category.Restore rows affected: %w", err)
 	}
 	if affected == 0 {
 		return domain.ErrNotFound

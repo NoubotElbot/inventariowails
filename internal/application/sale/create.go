@@ -62,12 +62,13 @@ func (uc *CreateUseCase) Execute(input CreateInput) (*domainSale.Sale, error) {
 			return nil, domainProduct.ErrInsufficientStock
 		}
 
-		subtotal := product.Price * float64(itemInput.Quantity)
+		unitPrice := float64(product.Price)
+		subtotal := unitPrice * float64(itemInput.Quantity)
 
 		sale.Items = append(sale.Items, domainSale.SaleItem{
 			ProductID: product.ID,
 			Quantity:  itemInput.Quantity,
-			UnitPrice: product.Price,
+			UnitPrice: unitPrice,
 			Subtotal:  subtotal,
 			CreatedAt: time.Now(),
 		})

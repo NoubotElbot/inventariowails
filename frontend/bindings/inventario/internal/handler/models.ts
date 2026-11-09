@@ -64,6 +64,7 @@ export class CategoryResponse {
     "name": string;
     "created_at": string;
     "updated_at": string;
+    "deleted_at"?: string | null;
 
     /** Creates a new CategoryResponse instance. */
     constructor($$source: Partial<CategoryResponse> = {}) {
@@ -188,6 +189,7 @@ export class CreateSaleRequest {
  */
 export class ListCategoriesRequest {
     "search": string;
+    "only_inactive": boolean;
     "page": number;
     "page_size": number;
 
@@ -195,6 +197,9 @@ export class ListCategoriesRequest {
     constructor($$source: Partial<ListCategoriesRequest> = {}) {
         if (!("search" in $$source)) {
             this["search"] = "";
+        }
+        if (!("only_inactive" in $$source)) {
+            this["only_inactive"] = false;
         }
         if (!("page" in $$source)) {
             this["page"] = 0;
@@ -212,6 +217,43 @@ export class ListCategoriesRequest {
     static createFrom($$source: any = {}): ListCategoriesRequest {
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         return new ListCategoriesRequest($$parsedSource as Partial<ListCategoriesRequest>);
+    }
+}
+
+export class ListProductsRequest {
+    "search": string;
+    "category_ids": number[];
+    "page": number;
+    "page_size": number;
+
+    /** Creates a new ListProductsRequest instance. */
+    constructor($$source: Partial<ListProductsRequest> = {}) {
+        if (!("search" in $$source)) {
+            this["search"] = "";
+        }
+        if (!("category_ids" in $$source)) {
+            this["category_ids"] = [];
+        }
+        if (!("page" in $$source)) {
+            this["page"] = 0;
+        }
+        if (!("page_size" in $$source)) {
+            this["page_size"] = 0;
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new ListProductsRequest instance from a string or object.
+     */
+    static createFrom($$source: any = {}): ListProductsRequest {
+        const $$createField1_0 = $$createType2;
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        if ("category_ids" in $$parsedSource) {
+            $$parsedSource["category_ids"] = $$createField1_0($$parsedSource["category_ids"]);
+        }
+        return new ListProductsRequest($$parsedSource as Partial<ListProductsRequest>);
     }
 }
 
@@ -252,7 +294,7 @@ export class PageResponse<T> {
      * of the generic class PageResponse.
      */
     static createFrom<T = any>($$createParamT: (source: any) => T): ($$source?: any) => PageResponse<T> {
-        const $$createField0_0 = $$createType2($$createParamT);
+        const $$createField0_0 = $$createType3($$createParamT);
         return ($$source: any = {}) => {
             let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
             if ("items" in $$parsedSource) {
@@ -422,7 +464,7 @@ export class SaleResponse {
      * Creates a new SaleResponse instance from a string or object.
      */
     static createFrom($$source: any = {}): SaleResponse {
-        const $$createField2_0 = $$createType4;
+        const $$createField2_0 = $$createType5;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("items" in $$parsedSource) {
             $$parsedSource["items"] = $$createField2_0($$parsedSource["items"]);
@@ -537,6 +579,7 @@ export class UpdateProductRequest {
 // Private type creation functions
 const $$createType0 = SaleItemRequest.createFrom;
 const $$createType1 = $Create.Array($$createType0);
-const $$createType2 = ($$createParamT: any) => $Create.Array($$createParamT);
-const $$createType3 = SaleItemResponse.createFrom;
-const $$createType4 = $Create.Array($$createType3);
+const $$createType2 = $Create.Array($Create.Any);
+const $$createType3 = ($$createParamT: any) => $Create.Array($$createParamT);
+const $$createType4 = SaleItemResponse.createFrom;
+const $$createType5 = $Create.Array($$createType4);

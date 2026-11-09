@@ -15,14 +15,14 @@ export const router = createRouter({
       path: '/products',
       component: () => import('@/views/products/ProductListView.vue'),
     },
-    // {
-    //   path: '/products/new',
-    //   component: () => import('@/views/products/ProductFormView.vue'),
-    // },
-    // {
-    //   path: '/products/:id/edit',
-    //   component: () => import('@/views/products/ProductFormView.vue'),
-    // },
+    {
+      path: '/products/new',
+      component: () => import('@/views/products/ProductCreateView.vue'),
+    },
+    {
+      path: '/products/:id/edit',
+      component: () => import('@/views/products/ProductUpdateView.vue'),
+    },
     // {
     //   path: '/products/:id/stock',
     //   component: () => import('@/views/stock/StockMovementsView.vue'),

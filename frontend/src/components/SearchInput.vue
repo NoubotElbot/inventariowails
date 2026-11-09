@@ -10,7 +10,7 @@ const props = withDefaults(
   {
     placeholder: 'Buscar…',
     debounce: 300,
-  },
+  }
 );
 
 const emit = defineEmits<{
@@ -37,17 +37,8 @@ function clear(): void {
       <InputIcon>
         <Search :size="16" />
       </InputIcon>
-      <InputText
-        v-model="query"
-        :placeholder="placeholder"
-        class="w-full"
-      />
+      <InputText v-model="query" :placeholder="placeholder" class="w-full" />
     </IconField>
-    <Button
-      v-if="query"
-      severity="secondary"
-      label="Limpiar"
-      @click="clear"
-    />
+    <Button v-if="query" severity="secondary" label="Limpiar" @click="clear" />
   </div>
 </template>

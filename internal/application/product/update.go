@@ -13,7 +13,7 @@ type UpdateInput struct {
 	Name       string
 	Code       string
 	Barcode    string
-	Price      float64
+	Price      int64
 	MinStock   int
 }
 

@@ -14,5 +14,6 @@ type Repository interface {
 	FindByID(id int64) (*Category, error)
 	Save(c *Category) error
 	Update(c *Category) error
-	Delete(id int64) error
+	SoftDelete(id int64) error
+	Restore(id int64) error
 }

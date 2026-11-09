@@ -19,7 +19,7 @@ func TestUpdateUseCase_Execute(t *testing.T) {
 			ID:    id,
 			Name:  "Laptop Pro",
 			Code:  "LAP-002",
-			Price: 1299.99,
+			Price: 1299,
 		}
 	}
 

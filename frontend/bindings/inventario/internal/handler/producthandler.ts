@@ -25,8 +25,8 @@ export function GetProduct(id: number): $CancellablePromise<$models.ProductRespo
     });
 }
 
-export function ListProducts(): $CancellablePromise<$models.ProductResponse[]> {
-    return $Call.ByID(859847870).then(($result: any) => {
+export function ListProducts(req: $models.ListProductsRequest): $CancellablePromise<$models.PageResponse<$models.ProductResponse>> {
+    return $Call.ByID(859847870, req).then(($result: any) => {
         return $$createType2($result);
     });
 }
@@ -46,4 +46,4 @@ export function UpdateProduct(id: number, req: $models.UpdateProductRequest): $C
 // Private type creation functions
 const $$createType0 = $models.ProductResponse.createFrom;
 const $$createType1 = $Create.Nullable($$createType0);
-const $$createType2 = $Create.Array($$createType0);
+const $$createType2 = $models.PageResponse.createFrom($$createType0);

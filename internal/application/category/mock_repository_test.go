@@ -5,6 +5,7 @@ import (
 	"inventario/internal/domain/pagination"
 	"sort"
 	"strings"
+	"time"
 )
 
 func containsFold(s, substr string) bool {
@@ -21,7 +22,8 @@ type mockRepo struct {
 	findByIDErr    error
 	saveErr        error
 	updateErr      error
-	deleteErr      error
+	softDeleteErr  error
+	restoreErr     error
 }
 
 func newMockRepo() *mockRepo {
@@ -37,6 +39,12 @@ func (m *mockRepo) FindAll(q domain.FindAllQuery) (pagination.Result[domain.Cate
 	}
 	all := make([]domain.Category, 0, len(m.categories))
 	for _, c := range m.categories {
+		if q.OnlyInactive && c.DeletedAt == nil {
+			continue
+		}
+		if !q.OnlyInactive && c.DeletedAt != nil {
+			continue
+		}
 		if q.Search == "" || containsFold(c.Name, q.Search) {
 			all = append(all, c)
 		}
@@ -93,13 +101,29 @@ func (m *mockRepo) Update(c *domain.Category) error {
 	return nil
 }
 
-func (m *mockRepo) Delete(id int64) error {
-	if m.deleteErr != nil {
-		return m.deleteErr
+func (m *mockRepo) SoftDelete(id int64) error {
+	if m.softDeleteErr != nil {
+		return m.softDeleteErr
 	}
-	if _, ok := m.categories[id]; !ok {
+	c, ok := m.categories[id]
+	if !ok {
 		return domain.ErrNotFound
 	}
-	delete(m.categories, id)
+	now := time.Now()
+	c.DeletedAt = &now
+	m.categories[id] = c
+	return nil
+}
+
+func (m *mockRepo) Restore(id int64) error {
+	if m.restoreErr != nil {
+		return m.restoreErr
+	}
+	c, ok := m.categories[id]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	c.DeletedAt = nil
+	m.categories[id] = c
 	return nil
 }
