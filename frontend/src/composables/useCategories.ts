@@ -1,39 +1,20 @@
 import { computed, readonly, ref, watch } from 'vue';
 import type { DataTablePageEvent } from 'primevue/datatable';
 
+import { useLoading } from '@/composables/useLoading';
 import { usePagination } from '@/composables/usePagination';
 import { categoryService } from '@/services/categoryService';
 import type { Category } from '@/types/category';
 
 export function useCategories() {
   const items = ref<Category[]>([]);
-  const pending = ref(0);
-  const error = ref<string | null>(null);
+  const { loading, error, withLoading, setError, clearError } = useLoading();
   const onlyInactive = ref(false);
-  const pagination = usePagination();
-
-  const loading = computed(() => pending.value > 0);
-
-  async function withLoading<T>(action: () => Promise<T>): Promise<T> {
-    pending.value++;
-
-    try {
-      return await action();
-    } finally {
-      pending.value--;
-    }
-  }
-
-  function setError(cause: unknown): void {
-    error.value = cause instanceof Error ? cause.message : String(cause);
-  }
-
-  function clearError(): void {
-    error.value = null;
-  }
+  const extraFilters = computed(() => ({ only_inactive: onlyInactive.value }));
+  const pagination = usePagination(10, extraFilters);
 
   async function refresh(): Promise<void> {
-    const res = await categoryService.list({ ...pagination.params.value, only_inactive: onlyInactive.value });
+    const res = await categoryService.list(pagination.params.value);
 
     // La página pedida ya no existe (p. ej. se borró el último elemento): retrocede.
     if (res.items.length === 0 && res.total > 0 && pagination.page.value > 1) {
@@ -85,10 +66,7 @@ export function useCategories() {
     clearError();
 
     try {
-      await withLoading(async () => {
-        await categoryService.update(id, name);
-        await refresh();
-      });
+      await withLoading(() => categoryService.update(id, name));
 
       return true;
     } catch (cause) {
@@ -101,10 +79,7 @@ export function useCategories() {
     clearError();
 
     try {
-      await withLoading(async () => {
-        await categoryService.remove(id);
-        await refresh();
-      });
+      await withLoading(() => categoryService.remove(id));
 
       return true;
     } catch (cause) {
@@ -117,10 +92,7 @@ export function useCategories() {
     clearError();
 
     try {
-      await withLoading(async () => {
-        await categoryService.restore(id);
-        await refresh();
-      });
+      await withLoading(() => categoryService.restore(id));
 
       return true;
     } catch (cause) {
