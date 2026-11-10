@@ -1,58 +1,58 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
-import Box from '@primeicons/vue/box';
-import { productService } from '@/services/productService';
-import type { CategoryOptionResponse } from 'bindings/inventario/internal/handler/models';
+  import { onMounted, ref } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { useToast } from 'primevue/usetoast';
+  import Box from '@primeicons/vue/box';
+  import { productService } from '@/services/productService';
+  import type { CategoryOptionResponse } from 'bindings/inventario/internal/modules/category/handler/models';
 
-const router = useRouter();
-const toast = useToast();
+  const router = useRouter();
+  const toast = useToast();
 
-const categoryOptions = ref<CategoryOptionResponse[]>([]);
-const error = ref<string | null>(null);
-const loading = ref(false);
+  const categoryOptions = ref<CategoryOptionResponse[]>([]);
+  const error = ref<string | null>(null);
+  const loading = ref(false);
 
-const form = ref({
-  name: '',
-  code: '',
-  barcode: '',
-  category_id: null as number | null,
-  price: 0,
-  stock: 0,
-  min_stock: 0,
-});
+  const form = ref({
+    name: '',
+    code: '',
+    barcode: '',
+    category_id: null as number | null,
+    price: 0,
+    stock: 0,
+    min_stock: 0,
+  });
 
-onMounted(async () => {
-  try {
-    const opts = await productService.categories();
-    categoryOptions.value = opts ?? [];
-  } catch {
-    // categories are optional
+  onMounted(async () => {
+    try {
+      const opts = await productService.categories();
+      categoryOptions.value = opts ?? [];
+    } catch {
+      // categories are optional
+    }
+  });
+
+  async function handleCreate() {
+    error.value = null;
+    loading.value = true;
+    try {
+      await productService.create({
+        name: form.value.name,
+        code: form.value.code,
+        barcode: form.value.barcode,
+        category_id: form.value.category_id,
+        price: form.value.price,
+        stock: form.value.stock,
+        min_stock: form.value.min_stock,
+      });
+      toast.add({ severity: 'success', summary: 'Producto creado', life: 3000 });
+      router.push('/products');
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : String(cause);
+    } finally {
+      loading.value = false;
+    }
   }
-});
-
-async function handleCreate() {
-  error.value = null;
-  loading.value = true;
-  try {
-    await productService.create({
-      name: form.value.name,
-      code: form.value.code,
-      barcode: form.value.barcode,
-      category_id: form.value.category_id,
-      price: form.value.price,
-      stock: form.value.stock,
-      min_stock: form.value.min_stock,
-    });
-    toast.add({ severity: 'success', summary: 'Producto creado', life: 3000 });
-    router.push('/products');
-  } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : String(cause);
-  } finally {
-    loading.value = false;
-  }
-}
 </script>
 
 <template>

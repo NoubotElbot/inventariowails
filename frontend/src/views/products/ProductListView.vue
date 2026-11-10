@@ -1,39 +1,39 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import Box from '@primeicons/vue/box';
-import FolderOpen from '@primeicons/vue/folder-open';
-import PencilLine from '@primeicons/vue/pencil';
-import Plus from '@primeicons/vue/plus';
-import { useProducts } from '@/composables/useProducts';
-import { formatDateTime } from '@/utils/date';
-import SearchInput from '@/components/SearchInput.vue';
-import ProductDeleteButton from './ProductDeleteButton.vue';
+  import { onMounted } from 'vue';
+  import { useRouter } from 'vue-router';
+  import Box from '@primeicons/vue/box';
+  import FolderOpen from '@primeicons/vue/folder-open';
+  import PencilLine from '@primeicons/vue/pencil';
+  import Plus from '@primeicons/vue/plus';
+  import { useProducts } from '@/composables/useProducts';
+  import { formatDateTime } from '@/utils/date';
+  import SearchInput from '@/components/SearchInput.vue';
+  import ProductDeleteButton from './ProductDeleteButton.vue';
 
-const router = useRouter();
+  const router = useRouter();
 
-const {
-  items,
-  loading,
-  error,
-  categoryOptions,
-  selectedCategoryIds,
-  pagination,
-  fetchAll,
-  loadCategoryOptions,
-  onPage,
-  onSearch,
-  onCategoryFilter,
-  clearError,
-} = useProducts();
+  const {
+    items,
+    loading,
+    error,
+    categoryOptions,
+    selectedCategoryIds,
+    pagination,
+    fetchAll,
+    loadCategoryOptions,
+    onPage,
+    onSearch,
+    onCategoryFilter,
+    clearError,
+  } = useProducts();
 
-onMounted(async () => {
-  await Promise.all([fetchAll(), loadCategoryOptions()]);
-});
+  onMounted(async () => {
+    await Promise.all([fetchAll(), loadCategoryOptions()]);
+  });
 
-function formatPrice(value: number): string {
-  return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
-}
+  function formatPrice(value: number): string {
+    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
+  }
 </script>
 
 <template>

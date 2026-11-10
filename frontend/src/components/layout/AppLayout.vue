@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import AppSidebar from './AppSidebar.vue';
-import ThemeToggle from '@/components/ThemeToggle.vue';
-import { SidebarLayout } from 'primevue';
-import SidebarIcon from '@primeicons/vue/sidebar';
+  import { ref } from 'vue';
+  import AppSidebar from './AppSidebar.vue';
+  import ThemeToggle from '@/components/ThemeToggle.vue';
+  import { SidebarLayout } from 'primevue';
+  import SidebarIcon from '@primeicons/vue/sidebar';
 
-const open = ref(true);
+  const open = ref(true);
 </script>
 
 <template>
