@@ -1,6 +1,3 @@
-import type {
-  PageResponse,
-  ListCategoriesRequest,
-} from 'bindings/inventario/internal/handler/models';
+import type { PageResponse } from 'bindings/inventario/internal/platform/responses/models';
 
-export type { PageResponse, ListCategoriesRequest };
+export type { PageResponse };
