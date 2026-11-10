@@ -1,47 +1,34 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import FolderOpen from '@primeicons/vue/folder-open';
-import Tag from '@primeicons/vue/tag';
-import { useToast } from 'primevue/usetoast';
-import { useCategories } from '@/composables/useCategories';
-import { formatDateTime } from '@/utils/date';
-import CategoryCreateDialog from './CategoryCreateDialog.vue';
-import CategoryUpdateDialog from './CategoryUpdateDialog.vue';
-import CategoryDeleteButton from './CategoryDeleteButton.vue';
-import SearchInput from '@/components/SearchInput.vue';
-import CategoryRestoreButton from './CategoryRestoreButton.vue';
+  import { onMounted } from 'vue';
+  import FolderOpen from '@primeicons/vue/folder-open';
+  import Tag from '@primeicons/vue/tag';
+  import { useCategories } from '@/composables/useCategories';
+  import { formatDateTime } from '@/utils/date';
+  import CategoryCreateDialog from './CategoryCreateDialog.vue';
+  import CategoryUpdateDialog from './CategoryUpdateDialog.vue';
+  import CategoryDeleteButton from './CategoryDeleteButton.vue';
+  import SearchInput from '@/components/SearchInput.vue';
+  import CategoryRestoreButton from './CategoryRestoreButton.vue';
 
-// ---------------------------------------------------------------------------
-// Composables
-// ---------------------------------------------------------------------------
-const {
-  items,
-  loading,
-  error,
-  pagination,
-  fetchAll,
-  onPage,
-  onSearch,
-  clearError,
-  onlyInactive,
-  restore,
-} = useCategories();
-const toast = useToast();
+  // ---------------------------------------------------------------------------
+  // Composables
+  // ---------------------------------------------------------------------------
+  const {
+    items,
+    loading,
+    error,
+    pagination,
+    fetchAll,
+    onPage,
+    onSearch,
+    clearError,
+    onlyInactive,
+  } = useCategories();
 
-// ---------------------------------------------------------------------------
-// Actions
-// ---------------------------------------------------------------------------
-async function handleRestore(id: number, name: string): Promise<void> {
-  const ok = await restore(id);
-  if (ok) {
-    toast.add({ severity: 'success', summary: `Categoría "${name}" restaurada`, life: 3000 });
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Init
-// ---------------------------------------------------------------------------
-onMounted(fetchAll);
+  // ---------------------------------------------------------------------------
+  // Init
+  // ---------------------------------------------------------------------------
+  onMounted(fetchAll);
 </script>
 
 <template>

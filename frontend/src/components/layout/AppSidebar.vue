@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { Box, InfoCircle, ShoppingCart, Tag } from '@primeicons/vue';
-import { useRoute, useRouter } from 'vue-router';
+  import { Box, InfoCircle, ShoppingCart, Tag } from '@primeicons/vue';
+  import { useRoute, useRouter } from 'vue-router';
 
-const open = defineModel<boolean>('open', { default: true });
+  const open = defineModel<boolean>('open', { default: true });
 
-const router = useRouter();
-const route = useRoute();
+  const router = useRouter();
+  const route = useRoute();
 
-const nav = [
-  { label: 'Productos', icon: Box, path: '/products' },
-  { label: 'Categorías', icon: Tag, path: '/categories' },
-  { label: 'Ventas', icon: ShoppingCart, path: '/sales' },
-];
+  const nav = [
+    { label: 'Productos', icon: Box, path: '/products' },
+    { label: 'Categorías', icon: Tag, path: '/categories' },
+    { label: 'Ventas', icon: ShoppingCart, path: '/sales' },
+  ];
 
-const isActive = (path: string) => route.path.startsWith(path);
+  const isActive = (path: string) => route.path.startsWith(path);
 </script>
 
 <template>
