@@ -4,9 +4,9 @@ import {
   ListCategories,
   RestoreCategory,
   UpdateCategory,
-} from 'bindings/inventario/internal/handler/categoryhandler';
+} from 'bindings/inventario/internal/modules/category/handler/categoryhandler';
 
-import type { ListCategoriesRequest } from '@/types/pagination';
+import type { ListCategoriesRequest } from 'bindings/inventario/internal/modules/category/handler/models';
 
 export const categoryService = {
   list: (req: ListCategoriesRequest) => ListCategories(req),

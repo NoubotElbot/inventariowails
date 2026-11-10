@@ -1,78 +1,78 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
-import Box from '@primeicons/vue/box';
-import { productService } from '@/services/productService';
-import type { CategoryOptionResponse } from 'bindings/inventario/internal/handler/models';
+  import { onMounted, ref } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import { useToast } from 'primevue/usetoast';
+  import Box from '@primeicons/vue/box';
+  import { productService } from '@/services/productService';
+  import type { CategoryOptionResponse } from 'bindings/inventario/internal/modules/category/handler/models';
 
-const route = useRoute();
-const router = useRouter();
-const toast = useToast();
+  const route = useRoute();
+  const router = useRouter();
+  const toast = useToast();
 
-const categoryOptions = ref<CategoryOptionResponse[]>([]);
-const error = ref<string | null>(null);
-const loading = ref(false);
-const notFound = ref(false);
+  const categoryOptions = ref<CategoryOptionResponse[]>([]);
+  const error = ref<string | null>(null);
+  const loading = ref(false);
+  const notFound = ref(false);
 
-const form = ref({
-  name: '',
-  code: '',
-  barcode: '',
-  category_id: null as number | null,
-  price: 0,
-  min_stock: 0,
-});
+  const form = ref({
+    name: '',
+    code: '',
+    barcode: '',
+    category_id: null as number | null,
+    price: 0,
+    min_stock: 0,
+  });
 
-onMounted(async () => {
-  const id = Number(route.params.id);
+  onMounted(async () => {
+    const id = Number(route.params.id);
 
-  const [product, opts] = await Promise.allSettled([
-    productService.get(id),
-    productService.categories(),
-  ]);
+    const [product, opts] = await Promise.allSettled([
+      productService.get(id),
+      productService.categories(),
+    ]);
 
-  if (opts.status === 'fulfilled') {
-    categoryOptions.value = opts.value ?? [];
+    if (opts.status === 'fulfilled') {
+      categoryOptions.value = opts.value ?? [];
+    }
+
+    if (product.status === 'rejected' || !product.value) {
+      notFound.value = true;
+      return;
+    }
+
+    const p = product.value;
+    form.value = {
+      name: p.name,
+      code: p.code,
+      barcode: p.barcode,
+      category_id: p.category_id,
+      price: p.price,
+      min_stock: p.min_stock,
+    };
+  });
+
+  async function handleUpdate() {
+    error.value = null;
+    loading.value = true;
+    const id = Number(route.params.id);
+    try {
+      await productService.update(id, {
+        name: form.value.name,
+        code: form.value.code,
+        barcode: form.value.barcode,
+        category_id: form.value.category_id,
+        price: form.value.price,
+        min_stock: form.value.min_stock,
+      });
+      toast.add({ severity: 'success', summary: 'Producto actualizado', life: 3000 });
+      router.push('/products');
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : String(cause);
+    } finally {
+      loading.value = false;
+    }
   }
-
-  if (product.status === 'rejected' || !product.value) {
-    notFound.value = true;
-    return;
-  }
-
-  const p = product.value;
-  form.value = {
-    name: p.name,
-    code: p.code,
-    barcode: p.barcode,
-    category_id: p.category_id,
-    price: p.price,
-    min_stock: p.min_stock,
-  };
-});
-
-async function handleUpdate() {
-  error.value = null;
-  loading.value = true;
-  const id = Number(route.params.id);
-  try {
-    await productService.update(id, {
-      name: form.value.name,
-      code: form.value.code,
-      barcode: form.value.barcode,
-      category_id: form.value.category_id,
-      price: form.value.price,
-      min_stock: form.value.min_stock,
-    });
-    toast.add({ severity: 'success', summary: 'Producto actualizado', life: 3000 });
-    router.push('/products');
-  } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : String(cause);
-  } finally {
-    loading.value = false;
-  }
-}
 </script>
 
 <template>

@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import Search from '@primeicons/vue/search';
+  import { ref, watch } from 'vue';
+  import Search from '@primeicons/vue/search';
 
-const props = withDefaults(
-  defineProps<{
-    placeholder?: string;
-    debounce?: number;
-  }>(),
-  {
-    placeholder: 'Buscar…',
-    debounce: 300,
+  const props = withDefaults(
+    defineProps<{
+      placeholder?: string;
+      debounce?: number;
+    }>(),
+    {
+      placeholder: 'Buscar…',
+      debounce: 300,
+    }
+  );
+
+  const emit = defineEmits<{
+    search: [value: string];
+  }>();
+
+  const query = ref('');
+  let timer: ReturnType<typeof setTimeout> | null = null;
+
+  watch(query, (value) => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => emit('search', value.trim()), props.debounce);
+  });
+
+  function clear(): void {
+    query.value = '';
+    emit('search', '');
   }
-);
-
-const emit = defineEmits<{
-  search: [value: string];
-}>();
-
-const query = ref('');
-let timer: ReturnType<typeof setTimeout> | null = null;
-
-watch(query, (value) => {
-  if (timer) clearTimeout(timer);
-  timer = setTimeout(() => emit('search', value.trim()), props.debounce);
-});
-
-function clear(): void {
-  query.value = '';
-  emit('search', '');
-}
 </script>
 
 <template>

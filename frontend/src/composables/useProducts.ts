@@ -1,41 +1,23 @@
 import { computed, readonly, ref } from 'vue';
 import type { DataTablePageEvent } from 'primevue/datatable';
 
+import { useLoading } from '@/composables/useLoading';
 import { usePagination } from '@/composables/usePagination';
 import { productService } from '@/services/productService';
+import type { CategoryOptionResponse } from 'bindings/inventario/internal/modules/category/handler/models';
 import type {
-  CategoryOptionResponse,
   CreateProductRequest,
   UpdateProductRequest,
-} from 'bindings/inventario/internal/handler/models';
+} from 'bindings/inventario/internal/modules/product/handler/models';
 import type { Product } from '@/types/product';
 
 export function useProducts() {
   const items = ref<Product[]>([]);
-  const pending = ref(0);
-  const error = ref<string | null>(null);
+  const { loading, error, withLoading, setError, clearError } = useLoading();
   const categoryOptions = ref<CategoryOptionResponse[]>([]);
   const selectedCategoryIds = ref<number[]>([]);
-  const pagination = usePagination();
-
-  const loading = computed(() => pending.value > 0);
-
-  async function withLoading<T>(action: () => Promise<T>): Promise<T> {
-    pending.value++;
-    try {
-      return await action();
-    } finally {
-      pending.value--;
-    }
-  }
-
-  function setError(cause: unknown): void {
-    error.value = cause instanceof Error ? cause.message : String(cause);
-  }
-
-  function clearError(): void {
-    error.value = null;
-  }
+  const extraFilters = computed(() => ({ category_ids: selectedCategoryIds.value }));
+  const pagination = usePagination(10, extraFilters);
 
   async function loadCategoryOptions(): Promise<void> {
     try {
@@ -47,14 +29,7 @@ export function useProducts() {
   }
 
   async function refresh(): Promise<void> {
-    const req = {
-      search: pagination.search.value,
-      category_ids: selectedCategoryIds.value,
-      page: pagination.page.value,
-      page_size: pagination.pageSize.value,
-    };
-
-    const res = await productService.list(req);
+    const res = await productService.list(pagination.params.value);
 
     if (res.items.length === 0 && res.total > 0 && pagination.page.value > 1) {
       pagination.goTo(res.total_pages);
@@ -104,10 +79,7 @@ export function useProducts() {
   async function update(id: number, req: UpdateProductRequest): Promise<boolean> {
     clearError();
     try {
-      await withLoading(async () => {
-        await productService.update(id, req);
-        await refresh();
-      });
+      await withLoading(() => productService.update(id, req));
       return true;
     } catch (cause) {
       setError(cause);
@@ -118,10 +90,7 @@ export function useProducts() {
   async function remove(id: number): Promise<boolean> {
     clearError();
     try {
-      await withLoading(async () => {
-        await productService.remove(id);
-        await refresh();
-      });
+      await withLoading(() => productService.remove(id));
       return true;
     } catch (cause) {
       setError(cause);
@@ -132,7 +101,7 @@ export function useProducts() {
   return {
     items: readonly(items),
     loading,
-    error: readonly(error),
+    error,
     categoryOptions: categoryOptions,
     selectedCategoryIds: readonly(selectedCategoryIds),
     pagination: readonly(pagination),

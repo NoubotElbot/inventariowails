@@ -6,8 +6,11 @@ import (
 	"path/filepath"
 
 	"inventario/database"
-	"inventario/internal/handler"
-	"inventario/internal/infrastructure/sqlite"
+	categoryhandler "inventario/internal/modules/category/handler"
+	producthandler "inventario/internal/modules/product/handler"
+	salehandler "inventario/internal/modules/sale/handler"
+	stockhandler "inventario/internal/modules/stock/handler"
+	"inventario/internal/platform/sqlite"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
@@ -16,10 +19,10 @@ import (
 type App struct {
 	db *sqlx.DB
 
-	CategoryHandler *handler.CategoryHandler
-	ProductHandler  *handler.ProductHandler
-	StockHandler    *handler.StockHandler
-	SaleHandler     *handler.SaleHandler
+	CategoryHandler *categoryhandler.CategoryHandler
+	ProductHandler  *producthandler.ProductHandler
+	StockHandler    *stockhandler.StockHandler
+	SaleHandler     *salehandler.SaleHandler
 }
 
 func NewApp() (*App, error) {
