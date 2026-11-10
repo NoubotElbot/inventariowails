@@ -7,6 +7,7 @@
   "singleQuote": true,
   "jsxSingleQuote": false,
   "semi": true,
+  "vueIndentScriptAndStyle": true,
 
   "trailingComma": "es5",
 
