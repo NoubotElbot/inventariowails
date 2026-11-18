@@ -13,7 +13,7 @@ func (a *App) wire() {
 	categoryMod := category.New(a.db)
 	productMod := product.New(a.db)
 	stockMod := stock.New(a.db, productMod.Repository())
-	saleMod := sale.New(a.db, productMod.Repository(), stockMod.Repository())
+	saleMod := sale.New(a.db, productMod.Repository(), stockMod.Service())
 
 	a.CategoryHandler = categoryMod.Handler
 	a.ProductHandler = productMod.Handler

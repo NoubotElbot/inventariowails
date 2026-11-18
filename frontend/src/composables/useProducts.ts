@@ -4,11 +4,11 @@ import type { DataTablePageEvent } from 'primevue/datatable';
 import { useLoading } from '@/composables/useLoading';
 import { usePagination } from '@/composables/usePagination';
 import { productService } from '@/services/productService';
-import type { CategoryOptionResponse } from 'bindings/inventario/internal/modules/category/handler/models';
+import type { CategoryOptionResponse } from 'bindings/inventario/internal/modules/category/adapters/handler/models';
 import type {
   CreateProductRequest,
   UpdateProductRequest,
-} from 'bindings/inventario/internal/modules/product/handler/models';
+} from 'bindings/inventario/internal/modules/product/adapters/handler/models';
 import type { Product } from '@/types/product';
 
 export function useProducts() {

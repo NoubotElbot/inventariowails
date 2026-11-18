@@ -13,15 +13,12 @@ type PageResponse[T any] struct {
 
 // MapPage converts a domain page into a PageResponse using fn for each item.
 func MapPage[D any, R any](page pagination.Result[D], fn func(D) R) PageResponse[R] {
-	items := make([]R, 0, len(page.Items))
-	for _, it := range page.Items {
-		items = append(items, fn(it))
-	}
+	items := MapSlice(page.Data, fn)
 	return PageResponse[R]{
 		Items:      items,
-		Total:      page.Total,
-		Page:       page.Page,
-		PageSize:   page.PageSize,
-		TotalPages: page.TotalPages,
+		Total:      page.Meta.TotalItems,
+		Page:       page.Meta.Page,
+		PageSize:   page.Meta.PageSize,
+		TotalPages: page.Meta.TotalPages,
 	}
 }

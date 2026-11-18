@@ -27,17 +27,17 @@ export const router = createRouter({
     //   path: '/products/:id/stock',
     //   component: () => import('@/views/stock/StockMovementsView.vue'),
     // },
-    // {
-    //   path: '/sales',
-    //   component: () => import('@/views/sales/SaleListView.vue'),
-    // },
-    // {
-    //   path: '/sales/new',
-    //   component: () => import('@/views/sales/SaleCreateView.vue'),
-    // },
-    // {
-    //   path: '/sales/:id',
-    //   component: () => import('@/views/sales/SaleDetailView.vue'),
-    // },
+    {
+      path: '/sales',
+      component: () => import('@/views/sales/SaleListView.vue'),
+    },
+    {
+      path: '/sales/new',
+      component: () => import('@/views/sales/SaleCreateView.vue'),
+    },
+    {
+      path: '/sales/:id(\\d+)',
+      component: () => import('@/views/sales/SaleDetailView.vue'),
+    },
   ],
 });

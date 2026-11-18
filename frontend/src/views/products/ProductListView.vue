@@ -7,6 +7,7 @@
   import Plus from '@primeicons/vue/plus';
   import { useProducts } from '@/composables/useProducts';
   import { formatDateTime } from '@/utils/date';
+  import { formatPrice } from '@/utils/currency';
   import SearchInput from '@/components/SearchInput.vue';
   import ProductDeleteButton from './ProductDeleteButton.vue';
 
@@ -30,10 +31,6 @@
   onMounted(async () => {
     await Promise.all([fetchAll(), loadCategoryOptions()]);
   });
-
-  function formatPrice(value: number): string {
-    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
-  }
 </script>
 
 <template>

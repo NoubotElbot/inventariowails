@@ -4,7 +4,7 @@
   import { useToast } from 'primevue/usetoast';
   import Box from '@primeicons/vue/box';
   import { productService } from '@/services/productService';
-  import type { CategoryOptionResponse } from 'bindings/inventario/internal/modules/category/handler/models';
+  import type { CategoryOptionResponse } from 'bindings/inventario/internal/modules/category/adapters/handler/models';
 
   const router = useRouter();
   const toast = useToast();

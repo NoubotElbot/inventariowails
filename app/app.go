@@ -6,18 +6,18 @@ import (
 	"path/filepath"
 
 	"inventario/database"
-	categoryhandler "inventario/internal/modules/category/handler"
-	producthandler "inventario/internal/modules/product/handler"
-	salehandler "inventario/internal/modules/sale/handler"
-	stockhandler "inventario/internal/modules/stock/handler"
-	"inventario/internal/platform/sqlite"
+	categoryhandler "inventario/internal/modules/category/adapters/handler"
+	producthandler "inventario/internal/modules/product/adapters/handler"
+	salehandler "inventario/internal/modules/sale/adapters/handler"
+	stockhandler "inventario/internal/modules/stock/adapters/handler"
+	"inventario/internal/platform/gormdb"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 )
 
 type App struct {
-	db *sqlx.DB
+	db *gorm.DB
 
 	CategoryHandler *categoryhandler.CategoryHandler
 	ProductHandler  *producthandler.ProductHandler
@@ -31,9 +31,14 @@ func NewApp() (*App, error) {
 		return nil, fmt.Errorf("resolviendo ruta de DB: %w", err)
 	}
 
-	db, err := sqlite.NewDB(dbPath, database.Migrations)
+	db, err := gormdb.Open(dbPath)
 	if err != nil {
 		return nil, fmt.Errorf("inicializando DB: %w", err)
+	}
+
+	if err := database.Migrate(db); err != nil {
+		_ = gormdb.Close(db)
+		return nil, fmt.Errorf("aplicando migraciones: %w", err)
 	}
 
 	a := &App{db: db}
@@ -47,7 +52,7 @@ func (a *App) Close() error {
 		return nil
 	}
 
-	return a.db.Close()
+	return gormdb.Close(a.db)
 }
 
 func ResolveDBPath() (string, error) {

@@ -1,14 +1,16 @@
-// Package category is the composition facade for the category module.
-// It wires the module's own layers (domain, application, infrastructure,
-// handler) and exposes the Wails-facing handler to the application root.
+// Package category is the composition root for the category module.
+// It wires the hexagonal layers: the GORM repository adapter (driven) is
+// injected into the core service through the outbound port, and the service
+// is injected into the Wails handler adapter (driving) through the inbound
+// port. Only the handler is exposed to the application root.
 package category
 
 import (
-	"inventario/internal/modules/category/application"
-	"inventario/internal/modules/category/handler"
-	"inventario/internal/modules/category/infrastructure"
+	"inventario/internal/modules/category/adapters/handler"
+	"inventario/internal/modules/category/adapters/repository"
+	"inventario/internal/modules/category/core/services"
 
-	"github.com/jmoiron/sqlx"
+	"gorm.io/gorm"
 )
 
 // Module holds the public surface of the category module.
@@ -17,18 +19,9 @@ type Module struct {
 }
 
 // New builds the category module's object graph from a shared DB handle.
-func New(db *sqlx.DB) *Module {
-	repo := infrastructure.NewCategoryRepository(db)
+func New(db *gorm.DB) *Module {
+	repo := repository.NewCategoryRepository(db)
+	svc := services.NewCategoryService(repo)
 
-	h := handler.NewCategoryHandler(
-		application.NewListUseCase(repo),
-		application.NewListOptionsUseCase(repo),
-		application.NewFindUseCase(repo),
-		application.NewCreateUseCase(repo),
-		application.NewUpdateUseCase(repo),
-		application.NewDeleteUseCase(repo),
-		application.NewRestoreUseCase(repo),
-	)
-
-	return &Module{Handler: h}
+	return &Module{Handler: handler.NewCategoryHandler(svc)}
 }

@@ -6,10 +6,38 @@ import (
 
 	"inventario/app"
 	"inventario/database"
-	"inventario/internal/platform/sqlite"
+	"inventario/internal/platform/gormdb"
 
 	"github.com/joho/godotenv"
 )
+
+// Local persistence models: the seed writes straight to the tables and keeps
+// no dependency on the modules' unexported repository models.
+
+type seedCategory struct {
+	ID        int64 `gorm:"primaryKey"`
+	Name      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func (seedCategory) TableName() string { return "categories" }
+
+type seedProduct struct {
+	ID         int64 `gorm:"primaryKey"`
+	CategoryID *int64
+	Name       string
+	Code       string
+	Barcode    string
+	Price      int64
+	Stock      int
+	MinStock   int
+	Active     bool
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+}
+
+func (seedProduct) TableName() string { return "products" }
 
 func main() {
 	_ = godotenv.Load()
@@ -19,45 +47,31 @@ func main() {
 		log.Fatalf("resolving db path: %v", err)
 	}
 
-	db, err := sqlite.NewDB(dbPath, database.Migrations)
+	db, err := gormdb.Open(dbPath)
 	if err != nil {
 		log.Fatalf("opening db: %v", err)
 	}
-	defer db.Close()
+	defer gormdb.Close(db)
+
+	if err := database.Migrate(db); err != nil {
+		log.Fatalf("migrating db: %v", err)
+	}
 
 	now := time.Now()
 
 	// --- categories ---
-	type catRow struct {
-		Name      string    `db:"name"`
-		CreatedAt time.Time `db:"created_at"`
-		UpdatedAt time.Time `db:"updated_at"`
-	}
+	categoryNames := []string{"Electrónica", "Ropa", "Alimentos", "Hogar"}
 
-	categories := []catRow{
-		{Name: "Electrónica", CreatedAt: now, UpdatedAt: now},
-		{Name: "Ropa", CreatedAt: now, UpdatedAt: now},
-		{Name: "Alimentos", CreatedAt: now, UpdatedAt: now},
-		{Name: "Hogar", CreatedAt: now, UpdatedAt: now},
-	}
-
-	catIDs := make(map[string]int64, len(categories))
-	for _, c := range categories {
-		res, err := db.NamedExec(
-			`INSERT OR IGNORE INTO categories (name, created_at, updated_at) VALUES (:name, :created_at, :updated_at)`,
-			c,
-		)
-		if err != nil {
-			log.Fatalf("inserting category %q: %v", c.Name, err)
+	catIDs := make(map[string]int64, len(categoryNames))
+	for _, name := range categoryNames {
+		// Insert or fetch the existing row, keyed on the unique name.
+		c := seedCategory{Name: name}
+		if err := db.Where(seedCategory{Name: name}).
+			Attrs(seedCategory{CreatedAt: now, UpdatedAt: now}).
+			FirstOrCreate(&c).Error; err != nil {
+			log.Fatalf("seeding category %q: %v", name, err)
 		}
-		id, _ := res.LastInsertId()
-		if id == 0 {
-			// already existed — fetch it
-			if err := db.Get(&id, `SELECT id FROM categories WHERE name = ?`, c.Name); err != nil {
-				log.Fatalf("fetching category %q: %v", c.Name, err)
-			}
-		}
-		catIDs[c.Name] = id
+		catIDs[name] = c.ID
 	}
 	log.Printf("categories ready: %v", catIDs)
 
@@ -67,20 +81,7 @@ func main() {
 	alim := catIDs["Alimentos"]
 	hogar := catIDs["Hogar"]
 
-	type productRow struct {
-		CategoryID *int64    `db:"category_id"`
-		Name       string    `db:"name"`
-		Code       string    `db:"code"`
-		Barcode    string    `db:"barcode"`
-		Price      int64     `db:"price"`
-		Stock      int       `db:"stock"`
-		MinStock   int       `db:"min_stock"`
-		Active     bool      `db:"active"`
-		CreatedAt  time.Time `db:"created_at"`
-		UpdatedAt  time.Time `db:"updated_at"`
-	}
-
-	products := []productRow{
+	products := []seedProduct{
 		{CategoryID: &elec, Name: "Audífonos Bluetooth", Code: "ELEC-001", Barcode: "7501000000001", Price: 599, Stock: 25, MinStock: 5, Active: true, CreatedAt: now, UpdatedAt: now},
 		{CategoryID: &elec, Name: "Cable USB-C", Code: "ELEC-002", Barcode: "7501000000002", Price: 89, Stock: 100, MinStock: 20, Active: true, CreatedAt: now, UpdatedAt: now},
 		{CategoryID: &elec, Name: "Cargador Inalámbrico", Code: "ELEC-003", Barcode: "7501000000003", Price: 349, Stock: 3, MinStock: 5, Active: true, CreatedAt: now, UpdatedAt: now},
@@ -98,18 +99,16 @@ func main() {
 
 	inserted := 0
 	for _, p := range products {
-		_, err := db.NamedExec(
-			`INSERT OR IGNORE INTO products
-				(category_id, name, code, barcode, price, stock, min_stock, active, created_at, updated_at)
-			 VALUES
-				(:category_id, :name, :code, :barcode, :price, :stock, :min_stock, :active, :created_at, :updated_at)`,
-			p,
-		)
-		if err != nil {
-			log.Printf("skipping %q: %v", p.Name, err)
+		// Insert only if no product has this code yet (codes are unique).
+		row := p
+		res := db.Where(seedProduct{Code: p.Code}).Attrs(p).FirstOrCreate(&row)
+		if res.Error != nil {
+			log.Printf("skipping %q: %v", p.Name, res.Error)
 			continue
 		}
-		inserted++
+		if res.RowsAffected > 0 {
+			inserted++
+		}
 	}
 
 	log.Printf("seed done: %d products inserted into %s", inserted, dbPath)
