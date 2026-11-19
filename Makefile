@@ -28,7 +28,7 @@ seed:
 
 ## test: Run all Go tests
 test:
-	go test -v .\internal\modules\...\application .\internal\modules\...\domain
+	go test -v .\internal\modules\...
 
 # ── Frontend ─────────────────────────────────────────────────────────────────
 
