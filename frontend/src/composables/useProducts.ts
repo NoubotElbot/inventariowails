@@ -1,5 +1,4 @@
 import { computed, readonly, ref } from 'vue';
-import type { DataTablePageEvent } from 'primevue/datatable';
 
 import { useLoading } from '@/composables/useLoading';
 import { usePagination } from '@/composables/usePagination';
@@ -49,8 +48,8 @@ export function useProducts() {
     }
   }
 
-  async function onPage(event: DataTablePageEvent): Promise<void> {
-    pagination.onPage(event);
+  async function onPage(page: number): Promise<void> {
+    pagination.onPage(page);
     await fetchAll();
   }
 

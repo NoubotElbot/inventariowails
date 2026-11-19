@@ -13,7 +13,7 @@ The backend is split into self-contained business **modules**, each built with a
 - **Transactional consistency:** A Unit of Work keeps product stock, stock movements, and sales in sync — a sale and all its stock deductions commit or roll back together.
 - **Inventory tracking:** Every stock change is recorded as a typed movement with a full history per product.
 - **Sales management:** Register sales with multiple products, priced from current product data.
-- **Desktop experience:** A Vue 3 + PrimeVue interface with light/dark themes, integrated with Go through typed Wails 3 bindings.
+- **Desktop experience:** A Vue 3 + shadcn-vue interface with light/dark themes, integrated with Go through typed Wails 3 bindings.
 
 ## Features
 
@@ -277,7 +277,7 @@ The Vue app lives in `frontend/src`:
 | [Vite](https://vite.dev/) | Build tooling and dev server |
 | [Vue Router](https://router.vuejs.org/) | Client-side routing |
 | [Pinia](https://pinia.vuejs.org/) | State management |
-| [PrimeVue](https://primevue.org/) + [PrimeIcons](https://primevue.org/icons/) | UI components |
+| [shadcn-vue](https://www.shadcn-vue.com/) ([Reka UI](https://reka-ui.com/)) + [Lucide](https://lucide.dev/) | UI components and icons | 
 | [Tailwind CSS](https://tailwindcss.com/) 4 | Styling |
 | [Prettier](https://prettier.io/) | Code formatting |
 | [pnpm](https://pnpm.io/) | Package manager |

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import Box from '@primeicons/vue/box';
+  import { Box } from '@lucide/vue';
 
   defineProps<{
     name: string;
@@ -9,10 +9,10 @@
 
 <template>
   <div class="flex items-center gap-2">
-    <Box :size="14" class="shrink-0 text-surface-400" />
+    <Box class="size-3.5 shrink-0 text-muted-foreground" />
     <div class="flex min-w-0 flex-col">
       <span class="truncate font-medium">{{ name }}</span>
-      <span class="font-mono text-xs text-surface-500">{{ code }}</span>
+      <span class="font-mono text-xs text-muted-foreground">{{ code }}</span>
     </div>
   </div>
 </template>

@@ -1,6 +1,5 @@
 import { computed, ref } from 'vue';
 import type { ComputedRef } from 'vue';
-import type { DataTablePageEvent } from 'primevue/datatable';
 
 import type { PageResponse } from '@/types/pagination';
 
@@ -13,7 +12,6 @@ export function usePagination<TFilters extends object = Record<string, never>>(
   const total = ref(0);
   const search = ref('');
 
-  const first = computed(() => (page.value - 1) * pageSize.value);
   const params = computed(() => ({
     search: search.value,
     page: page.value,
@@ -21,10 +19,9 @@ export function usePagination<TFilters extends object = Record<string, never>>(
     ...(extraFilters?.value ?? ({} as TFilters)),
   }));
 
-  /** Updates state from a PrimeVue DataTable `@page` event (0-based page). */
-  function onPage(event: DataTablePageEvent): void {
-    page.value = event.page + 1;
-    pageSize.value = event.rows;
+  /** Moves to another (1-based) page, e.g. from DataTablePagination. */
+  function onPage(target: number): void {
+    page.value = target;
   }
 
   /** Syncs state with the server's response. */
@@ -43,5 +40,5 @@ export function usePagination<TFilters extends object = Record<string, never>>(
     page.value = 1;
   }
 
-  return { page, pageSize, total, first, search, params, onPage, apply, goTo, setSearch };
+  return { page, pageSize, total, search, params, onPage, apply, goTo, setSearch };
 }

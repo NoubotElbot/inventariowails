@@ -1,38 +1,23 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
   import AppSidebar from './AppSidebar.vue';
   import ThemeToggle from '@/components/ThemeToggle.vue';
-  import { SidebarLayout } from 'primevue';
-  import SidebarIcon from '@primeicons/vue/sidebar';
-
-  const open = ref(true);
+  import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 </script>
 
 <template>
-  <SidebarLayout class="h-screen">
-    <AppSidebar v-model:open="open" />
+  <SidebarProvider class="h-full min-h-0">
+    <AppSidebar />
 
-    <SidebarMain>
-      <!-- Header -->
-      <header
-        class="flex h-12 items-center gap-2 border-b border-surface-200 px-4 dark:border-surface-700"
-      >
-        <!-- Botón colapsar -->
-        <SidebarTrigger target="main-nav" severity="secondary" :text="true" size="small">
-          <SidebarIcon />
-        </SidebarTrigger>
-
+    <SidebarInset class="min-h-0">
+      <header class="flex h-12 shrink-0 items-center gap-2 border-b px-4">
+        <SidebarTrigger class="-ml-1" />
         <span class="flex-1" />
-
-        <!-- ThemeToggle arriba a la derecha -->
         <ThemeToggle />
       </header>
 
-      <div class="flex-1 overflow-auto p-4">
+      <main class="flex-1 overflow-auto p-4">
         <router-view />
-      </div>
-    </SidebarMain>
-  </SidebarLayout>
-
-  <Toast position="bottom-right" />
+      </main>
+    </SidebarInset>
+  </SidebarProvider>
 </template>

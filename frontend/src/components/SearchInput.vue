@@ -1,6 +1,8 @@
 <script setup lang="ts">
-  import { ref, watch } from 'vue';
-  import Search from '@primeicons/vue/search';
+  import { onBeforeUnmount, ref, watch } from 'vue';
+  import { Search } from '@lucide/vue';
+  import { Button } from '@/components/ui/button';
+  import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 
   const props = withDefaults(
     defineProps<{
@@ -25,6 +27,10 @@
     timer = setTimeout(() => emit('search', value.trim()), props.debounce);
   });
 
+  onBeforeUnmount(() => {
+    if (timer) clearTimeout(timer);
+  });
+
   function clear(): void {
     query.value = '';
     emit('search', '');
@@ -32,13 +38,13 @@
 </script>
 
 <template>
-  <div class="flex items-center gap-2">
-    <IconField class="w-full max-w-sm">
-      <InputIcon>
-        <Search :size="16" />
-      </InputIcon>
-      <InputText v-model="query" :placeholder="placeholder" class="w-full" />
-    </IconField>
-    <Button v-if="query" severity="secondary" label="Limpiar" @click="clear" />
+  <div class="flex w-full max-w-md items-center gap-2">
+    <InputGroup>
+      <InputGroupAddon>
+        <Search />
+      </InputGroupAddon>
+      <InputGroupInput v-model="query" :placeholder="placeholder" />
+    </InputGroup>
+    <Button v-if="query" variant="secondary" @click="clear">Limpiar</Button>
   </div>
 </template>

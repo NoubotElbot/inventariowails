@@ -11,7 +11,7 @@ function readTheme(): Theme {
 const theme = ref<Theme>(readTheme());
 
 function applyTheme(value: Theme): void {
-  document.documentElement.classList.toggle('app-dark', value === 'dark');
+  document.documentElement.classList.toggle('dark', value === 'dark');
 
   document.documentElement.style.colorScheme = value;
 }

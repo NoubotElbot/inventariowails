@@ -1,5 +1,7 @@
 <script setup lang="ts">
-  import Check from '@primeicons/vue/check';
+  import { Check } from '@lucide/vue';
+  import { Button } from '@/components/ui/button';
+  import { Spinner } from '@/components/ui/spinner';
   import { formatPrice } from '@/utils/currency';
 
   defineProps<{
@@ -16,20 +18,17 @@
 </script>
 
 <template>
-  <div
-    class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-surface-200 px-4 py-3 dark:border-surface-700"
-  >
+  <div class="flex flex-wrap items-center justify-between gap-4 rounded-lg border px-4 py-3">
     <div class="flex flex-col">
-      <span class="text-sm text-surface-500">{{ units }} unidades</span>
-      <span class="text-2xl font-semibold text-surface-800 dark:text-surface-100">
-        {{ formatPrice(total) }}
-      </span>
+      <span class="text-sm text-muted-foreground">{{ units }} unidades</span>
+      <span class="text-2xl font-semibold text-foreground">{{ formatPrice(total) }}</span>
     </div>
 
     <div class="flex gap-2">
-      <Button label="Cancelar" severity="secondary" :disabled="loading" @click="emit('cancel')" />
-      <Button :loading="loading" :disabled="disabled" @click="emit('confirm')">
-        <Check v-if="!loading" :size="16" />
+      <Button variant="outline" :disabled="loading" @click="emit('cancel')">Cancelar</Button>
+      <Button :disabled="disabled || loading" @click="emit('confirm')">
+        <Spinner v-if="loading" />
+        <Check v-else />
         Confirmar venta
       </Button>
     </div>

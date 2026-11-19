@@ -10,8 +10,8 @@
 <template>
   <div class="flex items-center justify-between gap-3">
     <div class="flex items-center gap-3">
-      <component :is="icon" :size="20" class="text-primary" />
-      <h1 class="text-xl font-semibold text-surface-800 dark:text-surface-100">{{ title }}</h1>
+      <component :is="icon" class="size-5 text-primary" />
+      <h1 class="text-xl font-semibold text-foreground">{{ title }}</h1>
     </div>
     <div v-if="$slots.actions" class="flex items-center gap-2">
       <slot name="actions" />

@@ -1,25 +1,28 @@
 <script setup lang="ts">
   import { onMounted, ref } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
-  import { useToast } from 'primevue/usetoast';
-  import Box from '@primeicons/vue/box';
+  import { toast } from 'vue-sonner';
+  import { Box } from '@lucide/vue';
+  import ErrorAlert from '@/components/common/ErrorAlert.vue';
+  import PageHeader from '@/components/PageHeader.vue';
   import { productService } from '@/services/productService';
+  import type { ProductFormValues } from '@/types/product';
   import type { CategoryOptionResponse } from 'bindings/inventario/internal/modules/category/adapters/handler/models';
+  import ProductForm from './ProductForm.vue';
 
   const route = useRoute();
   const router = useRouter();
-  const toast = useToast();
 
   const categoryOptions = ref<CategoryOptionResponse[]>([]);
   const error = ref<string | null>(null);
   const loading = ref(false);
   const notFound = ref(false);
 
-  const form = ref({
+  const form = ref<ProductFormValues>({
     name: '',
     code: '',
     barcode: '',
-    category_id: null as number | null,
+    category_id: null,
     price: 0,
     min_stock: 0,
   });
@@ -57,15 +60,9 @@
     loading.value = true;
     const id = Number(route.params.id);
     try {
-      await productService.update(id, {
-        name: form.value.name,
-        code: form.value.code,
-        barcode: form.value.barcode,
-        category_id: form.value.category_id,
-        price: form.value.price,
-        min_stock: form.value.min_stock,
-      });
-      toast.add({ severity: 'success', summary: 'Producto actualizado', life: 3000 });
+      const { name, code, barcode, category_id, price, min_stock } = form.value;
+      await productService.update(id, { name, code, barcode, category_id, price, min_stock });
+      toast.success('Producto actualizado');
       router.push('/products');
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : String(cause);
@@ -76,81 +73,22 @@
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 max-w-xl">
-    <!-- Encabezado -->
-    <div class="flex items-center gap-3">
-      <Box :size="20" class="text-primary" />
-      <h1 class="text-xl font-semibold text-surface-800 dark:text-surface-100">Editar producto</h1>
-    </div>
+  <div class="flex max-w-xl flex-col gap-6">
+    <PageHeader title="Editar producto" :icon="Box" />
 
-    <Message v-if="notFound" severity="error"> Producto no encontrado. </Message>
+    <ErrorAlert v-if="notFound" message="Producto no encontrado." />
 
     <template v-else>
-      <Message v-if="error" severity="error" :closable="true" @close="error = null">
-        {{ error }}
-      </Message>
+      <ErrorAlert v-if="error" :message="error" closable @close="error = null" />
 
-      <div class="flex flex-col gap-4">
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Nombre *</label>
-          <InputText v-model="form.name" placeholder="Nombre del producto" />
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium text-surface-700 dark:text-surface-300"
-              >Código *</label
-            >
-            <InputText v-model="form.code" placeholder="Ej. PRD-001" />
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium text-surface-700 dark:text-surface-300"
-              >Código de barras</label
-            >
-            <InputText v-model="form.barcode" placeholder="Ej. 7501234567890" />
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-medium text-surface-700 dark:text-surface-300"
-            >Categoría</label
-          >
-          <Select
-            v-model="form.category_id"
-            :options="categoryOptions"
-            option-label="name"
-            option-value="id"
-            placeholder="Sin categoría"
-            show-clear
-          />
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium text-surface-700 dark:text-surface-300"
-              >Precio *</label
-            >
-            <InputNumber
-              v-model="form.price"
-              mode="currency"
-              currency="CLP"
-              locale="es-CL"
-              :min="0"
-            />
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-sm font-medium text-surface-700 dark:text-surface-300"
-              >Stock mínimo</label
-            >
-            <InputNumber v-model="form.min_stock" :min="0" />
-          </div>
-        </div>
-      </div>
-
-      <div class="flex justify-end gap-2">
-        <Button label="Cancelar" severity="secondary" @click="router.back()" />
-        <Button label="Guardar" :loading="loading" @click="handleUpdate" />
-      </div>
+      <ProductForm
+        v-model="form"
+        :category-options="categoryOptions"
+        submit-label="Guardar"
+        :loading="loading"
+        @submit="handleUpdate"
+        @cancel="router.back()"
+      />
     </template>
   </div>
 </template>

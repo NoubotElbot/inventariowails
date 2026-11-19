@@ -1,9 +1,11 @@
 <script setup lang="ts">
   import { computed } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
-  import ArrowLeft from '@primeicons/vue/arrow-left';
-  import Receipt from '@primeicons/vue/receipt';
+  import { ArrowLeft, Receipt } from '@lucide/vue';
+  import ErrorAlert from '@/components/common/ErrorAlert.vue';
   import PageHeader from '@/components/PageHeader.vue';
+  import { Button } from '@/components/ui/button';
+  import { Skeleton } from '@/components/ui/skeleton';
   import { useSaleDetail } from '@/composables/useSaleDetail';
   import SaleItemsTable from './SaleItemsTable.vue';
   import SaleSummary from './SaleSummary.vue';
@@ -19,18 +21,18 @@
   <div class="flex flex-col gap-6">
     <PageHeader :title="`Venta #${saleId}`" :icon="Receipt">
       <template #actions>
-        <Button size="small" severity="secondary" @click="router.push('/sales')">
-          <ArrowLeft :size="16" />
+        <Button size="sm" variant="secondary" @click="router.push('/sales')">
+          <ArrowLeft />
           Volver
         </Button>
       </template>
     </PageHeader>
 
-    <Message v-if="error" severity="error">{{ error }}</Message>
+    <ErrorAlert v-if="error" :message="error" />
 
     <div v-if="loading" class="flex flex-col gap-3">
-      <Skeleton height="4rem" />
-      <Skeleton height="12rem" />
+      <Skeleton class="h-16" />
+      <Skeleton class="h-48" />
     </div>
 
     <template v-else-if="sale">

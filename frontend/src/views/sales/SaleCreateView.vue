@@ -1,7 +1,8 @@
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { useToast } from 'primevue/usetoast';
-  import CartPlus from '@primeicons/vue/cart-plus';
+  import { toast } from 'vue-sonner';
+  import { ShoppingBasket } from '@lucide/vue';
+  import ErrorAlert from '@/components/common/ErrorAlert.vue';
   import PageHeader from '@/components/PageHeader.vue';
   import ProductSearchSelect from '@/components/ProductSearchSelect.vue';
   import { useLeaveGuard } from '@/composables/useLeaveGuard';
@@ -12,7 +13,6 @@
   import SaleCheckoutBar from './SaleCheckoutBar.vue';
 
   const router = useRouter();
-  const toast = useToast();
 
   const { items, total, count, isEmpty, add, setQuantity, remove, clear, toRequest } =
     useSaleCart();
@@ -25,11 +25,8 @@
 
   function addProduct(product: Product): void {
     if (add(product)) return;
-    toast.add({
-      severity: 'warn',
-      summary: 'Stock insuficiente',
-      detail: `Solo hay ${product.stock} unidades de "${product.name}".`,
-      life: 3000,
+    toast.warning('Stock insuficiente', {
+      description: `Solo hay ${product.stock} unidades de "${product.name}".`,
     });
   }
 
@@ -39,18 +36,16 @@
 
     // Empty the cart first so the leave guard lets us go to the detail.
     clear();
-    toast.add({ severity: 'success', summary: `Venta #${sale.id} registrada`, life: 3000 });
+    toast.success(`Venta #${sale.id} registrada`);
     await router.push(`/sales/${sale.id}`);
   }
 </script>
 
 <template>
   <div class="flex max-w-5xl flex-col gap-6">
-    <PageHeader title="Nueva venta" :icon="CartPlus" />
+    <PageHeader title="Nueva venta" :icon="ShoppingBasket" />
 
-    <Message v-if="error" severity="error" :closable="true" @close="clearError">
-      {{ error }}
-    </Message>
+    <ErrorAlert v-if="error" :message="error" closable @close="clearError" />
 
     <ProductSearchSelect @select="addProduct" />
 
