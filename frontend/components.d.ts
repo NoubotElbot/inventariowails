@@ -27,6 +27,7 @@ declare module 'vue' {
     Message: typeof import('primevue/message')['default']
     PageHeader: typeof import('./src/components/PageHeader.vue')['default']
     ProductSearchSelect: typeof import('./src/components/ProductSearchSelect.vue')['default']
+    ProgressBar: typeof import('primevue/progressbar')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Row: typeof import('primevue/row')['default']
@@ -52,6 +53,7 @@ declare module 'vue' {
     Tag: typeof import('primevue/tag')['default']
     ThemeToggle: typeof import('./src/components/ThemeToggle.vue')['default']
     Toast: typeof import('primevue/toast')['default']
+    UpdateDialog: typeof import('./src/components/UpdateDialog.vue')['default']
   }
   export interface GlobalDirectives {
     Tooltip: typeof import('primevue/tooltip')['default']

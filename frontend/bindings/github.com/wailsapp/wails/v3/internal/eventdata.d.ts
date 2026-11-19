@@ -5,10 +5,15 @@
 // @ts-ignore: Unused imports
 import type { Events } from "@wailsio/runtime";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import type * as handler$0 from "../../../../../inventario/internal/modules/system/adapters/handler/models.js";
+
 declare module "@wailsio/runtime" {
     namespace Events {
         interface CustomEvents {
             "time": string;
+            "update:progress": handler$0.UpdateProgress;
         }
     }
 }

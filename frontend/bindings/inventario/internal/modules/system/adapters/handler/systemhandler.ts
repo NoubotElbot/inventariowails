@@ -5,6 +5,19 @@
 // @ts-ignore: Unused imports
 import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "@wailsio/runtime";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as $models from "./models.js";
+
+/**
+ * CheckForUpdate reports whether a newer release is published.
+ */
+export function CheckForUpdate(): $CancellablePromise<$models.UpdateInfoResponse> {
+    return $Call.ByID(763060873).then(($result: any) => {
+        return $$createType0($result);
+    });
+}
+
 /**
  * GetVersion returns the application version without the leading "v"
  * (e.g. "1.2.3"), or "dev" for non-release builds.
@@ -12,3 +25,22 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
 export function GetVersion(): $CancellablePromise<string> {
     return $Call.ByID(1709223735);
 }
+
+/**
+ * InstallUpdate downloads the installer for this platform, emitting
+ * UpdateProgressEvent, launches it and quits the application so the
+ * installer can replace it.
+ */
+export function InstallUpdate(): $CancellablePromise<void> {
+    return $Call.ByID(1873817891);
+}
+
+/**
+ * OpenReleasePage opens the latest release page in the default browser.
+ */
+export function OpenReleasePage(): $CancellablePromise<void> {
+    return $Call.ByID(4098210631);
+}
+
+// Private type creation functions
+const $$createType0 = $models.UpdateInfoResponse.createFrom;

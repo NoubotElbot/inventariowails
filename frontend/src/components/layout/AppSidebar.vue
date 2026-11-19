@@ -1,8 +1,10 @@
 <script setup lang="ts">
-  import { Box, InfoCircle, ShoppingCart, Tag } from '@primeicons/vue';
+  import { Box, CloudDownload, InfoCircle, ShoppingCart, Tag } from '@primeicons/vue';
   import { computed, onMounted, ref } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
 
+  import UpdateDialog from '@/components/UpdateDialog.vue';
+  import { useUpdater } from '@/composables/useUpdater';
   import { systemService } from '@/services/systemService';
 
   const open = defineModel<boolean>('open', { default: true });
@@ -20,8 +22,17 @@
 
   const version = ref('');
   const versionLabel = computed(() =>
-    !version.value || version.value === 'dev' ? version.value : `v${version.value}`,
+    !version.value || version.value === 'dev' ? version.value : `v${version.value}`
   );
+
+  const { info: updateInfo, available: updateAvailable, installing, percent } = useUpdater();
+  const updateDialogOpen = ref(false);
+  const updateLabel = computed(() => {
+    if (installing.value) {
+      return percent.value === null ? 'Descargando…' : `Descargando… ${percent.value}%`;
+    }
+    return `Actualizar a v${updateInfo.value?.latest_version}`;
+  });
 
   onMounted(async () => {
     try {
@@ -82,6 +93,23 @@
         <!-- Footer -->
         <SidebarFooter>
           <SidebarMenu>
+            <SidebarMenuItem v-if="updateAvailable">
+              <SidebarMenuButton
+                class="text-primary"
+                :title="updateLabel"
+                @click="updateDialogOpen = true"
+              >
+                <span class="relative shrink-0">
+                  <CloudDownload class="size-6 shrink-0 text-xs" />
+                  <span
+                    v-if="!installing"
+                    class="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-red-500"
+                    aria-hidden="true"
+                  />
+                </span>
+                <span class="text-xs font-medium">{{ updateLabel }}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton>
                 <InfoCircle class="size-6 shrink-0 text-xs" />
@@ -95,4 +123,6 @@
       </SidebarPanel>
     </SidebarAside>
   </Sidebar>
+
+  <UpdateDialog v-model:visible="updateDialogOpen" />
 </template>
