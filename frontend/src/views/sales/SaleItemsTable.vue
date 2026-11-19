@@ -1,42 +1,53 @@
 <script setup lang="ts">
-  import { formatPrice } from '@/utils/currency';
+  import DataTable from '@/components/common/DataTable.vue';
+  import type { DataTableColumn } from '@/components/common/data-table';
+  import { TableCell, TableRow } from '@/components/ui/table';
   import type { SaleItem } from '@/types/sale';
+  import { formatPrice } from '@/utils/currency';
   import SaleProductCell from './SaleProductCell.vue';
 
   defineProps<{
     items: SaleItem[];
     total: number;
   }>();
+
+  const columns: DataTableColumn<SaleItem>[] = [
+    { key: 'product', header: 'Producto' },
+    {
+      key: 'unit_price',
+      header: 'Precio unit.',
+      class: 'w-36',
+      value: (i) => formatPrice(i.unit_price),
+    },
+    { key: 'quantity', header: 'Cantidad', class: 'w-28' },
+    { key: 'subtotal', header: 'Subtotal', class: 'w-36' },
+  ];
 </script>
 
 <template>
-  <DataTable :value="items" data-key="id" striped-rows table-style="min-width: 40rem">
-    <Column header="Producto">
-      <template #body="{ data }">
-        <SaleProductCell
-          :name="data.product?.name ?? `Producto #${data.product_id}`"
-          :code="data.product?.code ?? '—'"
-        />
-      </template>
-    </Column>
+  <DataTable
+    :rows="items"
+    :columns="columns"
+    :row-key="(item) => item.id"
+    striped
+    table-class="min-w-[40rem]"
+  >
+    <template #cell-product="{ row }">
+      <SaleProductCell
+        :name="row.product?.name ?? `Producto #${row.product_id}`"
+        :code="row.product?.code ?? '—'"
+      />
+    </template>
 
-    <Column header="Precio unit." style="width: 9rem">
-      <template #body="{ data }">{{ formatPrice(data.unit_price) }}</template>
-    </Column>
+    <template #cell-subtotal="{ row }">
+      <span class="font-medium">{{ formatPrice(row.subtotal) }}</span>
+    </template>
 
-    <Column field="quantity" header="Cantidad" style="width: 7rem" />
-
-    <Column header="Subtotal" style="width: 9rem">
-      <template #body="{ data }">
-        <span class="font-medium">{{ formatPrice(data.subtotal) }}</span>
-      </template>
-    </Column>
-
-    <ColumnGroup type="footer">
-      <Row>
-        <Column footer="Total" :colspan="3" footer-style="text-align: right" />
-        <Column :footer="formatPrice(total)" footer-class="font-semibold" />
-      </Row>
-    </ColumnGroup>
+    <template #footer>
+      <TableRow class="hover:bg-transparent">
+        <TableCell :colspan="3" class="px-3 py-2.5 text-right">Total</TableCell>
+        <TableCell class="px-3 py-2.5 font-semibold">{{ formatPrice(total) }}</TableCell>
+      </TableRow>
+    </template>
   </DataTable>
 </template>

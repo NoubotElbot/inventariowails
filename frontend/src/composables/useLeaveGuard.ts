@@ -1,6 +1,5 @@
 import { onBeforeRouteLeave } from 'vue-router';
-import { useConfirm } from 'primevue/useconfirm';
-import ExclamationTriangle from '@primeicons/vue/exclamation-triangle';
+import { useConfirm } from '@/composables/useConfirm';
 
 interface LeaveGuardOptions {
   header?: string;
@@ -21,22 +20,18 @@ export function useLeaveGuard(shouldConfirm: () => boolean, options: LeaveGuardO
     rejectLabel = 'Quedarme',
   } = options;
 
-  const confirm = useConfirm();
+  const { confirm } = useConfirm();
 
   onBeforeRouteLeave(() => {
     if (!shouldConfirm()) return true;
 
-    return new Promise<boolean>((resolve) => {
-      confirm.require({
-        header,
-        message,
-        icon: ExclamationTriangle,
-        rejectProps: { label: rejectLabel, severity: 'secondary', outlined: true },
-        acceptProps: { label: acceptLabel, severity: 'danger' },
-        accept: () => resolve(true),
-        reject: () => resolve(false),
-        onHide: () => resolve(false),
-      });
+    // Cancelling or dismissing the dialog keeps the user on the page.
+    return confirm({
+      title: header,
+      description: message,
+      confirmLabel: acceptLabel,
+      cancelLabel: rejectLabel,
+      variant: 'destructive',
     });
   });
 }

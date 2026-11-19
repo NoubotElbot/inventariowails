@@ -10,7 +10,6 @@ permissions:
   contents: write
 
 env:
-  VITE_PRIMEUI_LICENSE_KEY: ${{ secrets.VITE_PRIMEUI_LICENSE_KEY }}
   ENV: production
 
 jobs:

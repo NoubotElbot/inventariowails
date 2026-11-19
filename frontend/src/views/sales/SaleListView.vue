@@ -1,13 +1,17 @@
 <script setup lang="ts">
   import { onMounted } from 'vue';
   import { useRouter } from 'vue-router';
-  import type { DataTableRowClickEvent } from 'primevue/datatable';
-  import Eye from '@primeicons/vue/eye';
-  import FolderOpen from '@primeicons/vue/folder-open';
-  import Plus from '@primeicons/vue/plus';
-  import ShoppingCart from '@primeicons/vue/shopping-cart';
+  import { Eye, FolderOpen, Plus, ShoppingCart } from '@lucide/vue';
+  import DataTable from '@/components/common/DataTable.vue';
+  import DataTablePagination from '@/components/common/DataTablePagination.vue';
+  import EmptyState from '@/components/common/EmptyState.vue';
+  import ErrorAlert from '@/components/common/ErrorAlert.vue';
+  import IconButton from '@/components/common/IconButton.vue';
+  import type { DataTableColumn } from '@/components/common/data-table';
   import PageHeader from '@/components/PageHeader.vue';
+  import { Button } from '@/components/ui/button';
   import { useSales } from '@/composables/useSales';
+  import type { Sale } from '@/types/sale';
   import { formatPrice } from '@/utils/currency';
   import { formatDateTime } from '@/utils/date';
   import { totalUnits } from '@/utils/sale';
@@ -15,14 +19,18 @@
   const router = useRouter();
   const { items, loading, error, pagination, fetchAll, onPage, clearError } = useSales();
 
+  const columns: DataTableColumn<Sale>[] = [
+    { key: 'id', header: 'N°', class: 'w-20' },
+    { key: 'created_at', header: 'Fecha' },
+    { key: 'units', header: 'Unidades', class: 'w-32', value: (sale) => totalUnits(sale.items) },
+    { key: 'total', header: 'Total', class: 'w-40' },
+    { key: 'actions', class: 'w-16' },
+  ];
+
   onMounted(fetchAll);
 
-  function openSale(id: number): void {
-    router.push(`/sales/${id}`);
-  }
-
-  function onRowClick(event: DataTableRowClickEvent): void {
-    openSale(event.data.id);
+  function openSale(sale: Sale): void {
+    router.push(`/sales/${sale.id}`);
   }
 </script>
 
@@ -30,78 +38,58 @@
   <div class="flex flex-col gap-6">
     <PageHeader title="Ventas" :icon="ShoppingCart">
       <template #actions>
-        <Button size="small" @click="router.push('/sales/new')">
+        <Button size="sm" @click="router.push('/sales/new')">
           <Plus />
           Nueva venta
         </Button>
       </template>
     </PageHeader>
 
-    <Message v-if="error" severity="error" :closable="true" @close="clearError">
-      {{ error }}
-    </Message>
+    <ErrorAlert v-if="error" :message="error" closable @close="clearError" />
 
-    <DataTable
-      :value="items"
-      :loading="loading"
-      lazy
-      paginator
-      :rows="pagination.pageSize"
-      :first="pagination.first"
-      :total-records="pagination.total"
-      paginator-template="PrevPageLink PageLinks NextPageLink"
-      data-key="id"
-      striped-rows
-      row-hover
-      class="cursor-pointer"
-      table-style="min-width: 40rem"
-      @page="onPage"
-      @row-click="onRowClick"
-    >
-      <template #empty>
-        <div class="flex flex-col items-center gap-3 py-12 text-surface-400">
-          <FolderOpen :size="40" />
-          <span class="text-sm">No hay ventas registradas</span>
-        </div>
-      </template>
-
-      <Column field="id" header="N°" style="width: 5rem">
-        <template #body="{ data }">
-          <span class="font-mono">#{{ data.id }}</span>
+    <div class="flex flex-col gap-3">
+      <DataTable
+        :rows="items"
+        :columns="columns"
+        :row-key="(row) => row.id"
+        :loading="loading"
+        striped
+        clickable
+        table-class="min-w-[40rem]"
+        @row-click="openSale"
+      >
+        <template #empty>
+          <EmptyState :icon="FolderOpen" message="No hay ventas registradas" />
         </template>
-      </Column>
 
-      <Column header="Fecha">
-        <template #body="{ data }">
-          <span class="text-sm">{{ formatDateTime(data.created_at) }}</span>
+        <template #cell-id="{ row }">
+          <span class="font-mono">#{{ row.id }}</span>
         </template>
-      </Column>
 
-      <Column header="Unidades" style="width: 8rem">
-        <template #body="{ data }">{{ totalUnits(data.items) }}</template>
-      </Column>
-
-      <Column header="Total" style="width: 10rem">
-        <template #body="{ data }">
-          <span class="font-medium">{{ formatPrice(data.total) }}</span>
+        <template #cell-created_at="{ row }">
+          <span class="text-sm">{{ formatDateTime(row.created_at) }}</span>
         </template>
-      </Column>
 
-      <Column style="width: 4rem">
-        <template #body="{ data }">
-          <Button
-            severity="secondary"
-            text
-            rounded
-            size="small"
-            v-tooltip.top="'Ver detalle'"
-            :aria-label="`Ver venta #${data.id}`"
-            @click.stop="openSale(data.id)"
-          >
-            <Eye :size="15" />
-          </Button>
+        <template #cell-total="{ row }">
+          <span class="font-medium">{{ formatPrice(row.total) }}</span>
         </template>
-      </Column>
-    </DataTable>
+
+        <template #cell-actions="{ row }">
+          <IconButton
+            :icon="Eye"
+            tooltip="Ver detalle"
+            :aria-label="`Ver venta #${row.id}`"
+            @click.stop="openSale(row)"
+          />
+        </template>
+      </DataTable>
+
+      <DataTablePagination
+        :page="pagination.page"
+        :page-size="pagination.pageSize"
+        :total="pagination.total"
+        @update:page="onPage"
+      />
+    </div>
   </div>
 </template>

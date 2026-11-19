@@ -1,10 +1,12 @@
 <script setup lang="ts">
-  import CartPlus from '@primeicons/vue/cart-plus';
-  import Minus from '@primeicons/vue/minus';
-  import Plus from '@primeicons/vue/plus';
-  import Trash from '@primeicons/vue/trash';
-  import { formatPrice } from '@/utils/currency';
+  import { ShoppingBasket, Trash2 } from '@lucide/vue';
+  import DataTable from '@/components/common/DataTable.vue';
+  import EmptyState from '@/components/common/EmptyState.vue';
+  import IconButton from '@/components/common/IconButton.vue';
+  import NumberInput from '@/components/common/NumberInput.vue';
+  import type { DataTableColumn } from '@/components/common/data-table';
   import type { CartItem } from '@/types/sale';
+  import { formatPrice } from '@/utils/currency';
   import SaleProductCell from './SaleProductCell.vue';
 
   defineProps<{
@@ -16,70 +18,60 @@
     remove: [productId: number];
   }>();
 
-  function onQuantityChange(productId: number, quantity: number | null): void {
-    if (quantity !== null) emit('updateQuantity', productId, quantity);
-  }
+  const columns: DataTableColumn<CartItem>[] = [
+    { key: 'product', header: 'Producto' },
+    {
+      key: 'price',
+      header: 'Precio unit.',
+      class: 'w-36',
+      value: (i) => formatPrice(i.product.price),
+    },
+    { key: 'quantity', header: 'Cantidad', class: 'w-40' },
+    { key: 'subtotal', header: 'Subtotal', class: 'w-36' },
+    { key: 'actions', class: 'w-16' },
+  ];
 </script>
 
 <template>
-  <DataTable :value="items" data-key="product.id" table-style="min-width: 44rem">
+  <DataTable
+    :rows="items"
+    :columns="columns"
+    :row-key="(item) => item.product.id"
+    table-class="min-w-[44rem]"
+  >
     <template #empty>
-      <div class="flex flex-col items-center gap-3 py-10 text-surface-400">
-        <CartPlus :size="36" />
-        <span class="text-sm">Busca un producto para agregarlo a la venta</span>
-      </div>
+      <EmptyState :icon="ShoppingBasket" message="Busca un producto para agregarlo a la venta" />
     </template>
 
-    <Column header="Producto">
-      <template #body="{ data }">
-        <SaleProductCell :name="data.product.name" :code="data.product.code" />
-      </template>
-    </Column>
+    <template #cell-product="{ row }">
+      <SaleProductCell :name="row.product.name" :code="row.product.code" />
+    </template>
 
-    <Column header="Precio unit." style="width: 9rem">
-      <template #body="{ data }">{{ formatPrice(data.product.price) }}</template>
-    </Column>
+    <template #cell-quantity="{ row }">
+      <NumberInput
+        class="w-32"
+        :model-value="row.quantity"
+        :min="1"
+        :max="row.product.stock"
+        show-buttons
+        size="sm"
+        :aria-label="`Cantidad de ${row.product.name}`"
+        @update:model-value="emit('updateQuantity', row.product.id, $event)"
+      />
+    </template>
 
-    <Column header="Cantidad" style="width: 11rem">
-      <template #body="{ data }">
-        <InputNumber
-          :model-value="data.quantity"
-          show-buttons
-          button-layout="horizontal"
-          :min="1"
-          :max="data.product.stock"
-          :allow-empty="false"
-          size="small"
-          input-class="w-14 text-center"
-          :aria-label="`Cantidad de ${data.product.name}`"
-          @update:model-value="onQuantityChange(data.product.id, $event)"
-        >
-          <template #incrementicon><Plus :size="12" /></template>
-          <template #decrementicon><Minus :size="12" /></template>
-        </InputNumber>
-      </template>
-    </Column>
+    <template #cell-subtotal="{ row }">
+      <span class="font-medium">{{ formatPrice(row.product.price * row.quantity) }}</span>
+    </template>
 
-    <Column header="Subtotal" style="width: 9rem">
-      <template #body="{ data }">
-        <span class="font-medium">{{ formatPrice(data.product.price * data.quantity) }}</span>
-      </template>
-    </Column>
-
-    <Column style="width: 4rem">
-      <template #body="{ data }">
-        <Button
-          severity="danger"
-          text
-          rounded
-          size="small"
-          v-tooltip.top="'Quitar'"
-          :aria-label="`Quitar ${data.product.name}`"
-          @click="emit('remove', data.product.id)"
-        >
-          <Trash :size="15" />
-        </Button>
-      </template>
-    </Column>
+    <template #cell-actions="{ row }">
+      <IconButton
+        :icon="Trash2"
+        tooltip="Quitar"
+        :aria-label="`Quitar ${row.product.name}`"
+        class="text-destructive hover:text-destructive"
+        @click="emit('remove', row.product.id)"
+      />
+    </template>
   </DataTable>
 </template>

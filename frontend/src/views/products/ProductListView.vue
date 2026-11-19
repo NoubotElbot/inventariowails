@@ -1,15 +1,24 @@
 <script setup lang="ts">
-  import { onMounted } from 'vue';
+  import { computed, onMounted } from 'vue';
   import { useRouter } from 'vue-router';
-  import Box from '@primeicons/vue/box';
-  import FolderOpen from '@primeicons/vue/folder-open';
-  import PencilLine from '@primeicons/vue/pencil';
-  import Plus from '@primeicons/vue/plus';
-  import { useProducts } from '@/composables/useProducts';
-  import { formatDateTime } from '@/utils/date';
-  import { formatPrice } from '@/utils/currency';
+  import { Box, FolderOpen, Pencil, Plus, Trash2 } from '@lucide/vue';
+  import ConfirmActionButton from '@/components/common/ConfirmActionButton.vue';
+  import DataTable from '@/components/common/DataTable.vue';
+  import DataTablePagination from '@/components/common/DataTablePagination.vue';
+  import EmptyState from '@/components/common/EmptyState.vue';
+  import ErrorAlert from '@/components/common/ErrorAlert.vue';
+  import IconButton from '@/components/common/IconButton.vue';
+  import MultiSelect from '@/components/common/MultiSelect.vue';
+  import type { DataTableColumn } from '@/components/common/data-table';
+  import { toSelectOptions } from '@/components/common/select';
+  import PageHeader from '@/components/PageHeader.vue';
   import SearchInput from '@/components/SearchInput.vue';
-  import ProductDeleteButton from './ProductDeleteButton.vue';
+  import { Badge } from '@/components/ui/badge';
+  import { Button } from '@/components/ui/button';
+  import { useProducts } from '@/composables/useProducts';
+  import type { Product } from '@/types/product';
+  import { formatPrice } from '@/utils/currency';
+  import { formatDateTime } from '@/utils/date';
 
   const router = useRouter();
 
@@ -25,8 +34,23 @@
     onPage,
     onSearch,
     onCategoryFilter,
+    remove,
     clearError,
   } = useProducts();
+
+  const categorySelectOptions = computed(() => toSelectOptions(categoryOptions.value));
+
+  const columns: DataTableColumn<Product>[] = [
+    { key: 'id', header: 'ID', class: 'w-16' },
+    { key: 'name', header: 'Nombre' },
+    { key: 'code', header: 'Código', class: 'w-36' },
+    { key: 'barcode', header: 'C. barras', class: 'w-40' },
+    { key: 'price', header: 'Precio', class: 'w-36' },
+    { key: 'stock', header: 'Stock', class: 'w-28' },
+    { key: 'active', header: 'Estado', class: 'w-28' },
+    { key: 'updated_at', header: 'Actualizado', class: 'w-48' },
+    { key: 'actions', header: 'Acciones', class: 'w-28' },
+  ];
 
   onMounted(async () => {
     await Promise.all([fetchAll(), loadCategoryOptions()]);
@@ -35,132 +59,104 @@
 
 <template>
   <div class="flex flex-col gap-6">
-    <!-- Encabezado -->
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <Box :size="20" class="text-primary" />
-        <h1 class="text-xl font-semibold text-surface-800 dark:text-surface-100">Productos</h1>
-      </div>
-      <Button size="small" @click="router.push('/products/new')">
-        <Plus />
-        Nuevo producto
-      </Button>
-    </div>
+    <PageHeader title="Productos" :icon="Box">
+      <template #actions>
+        <Button size="sm" @click="router.push('/products/new')">
+          <Plus />
+          Nuevo producto
+        </Button>
+      </template>
+    </PageHeader>
 
-    <!-- Búsqueda y filtro por categoría -->
-    <div class="flex flex-row items-center justify-start gap-3">
+    <div class="flex flex-wrap items-center gap-3">
       <SearchInput placeholder="Buscar por nombre, código o código de barras…" @search="onSearch" />
-      <Select
-        :model-value="selectedCategoryIds"
-        :options="categoryOptions"
-        multiple
-        checkmark
-        showClear
-        option-label="name"
-        option-value="id"
-        placeholder="Todas las categorías"
-        :max-selected-labels="2"
+      <MultiSelect
         class="w-64"
+        :model-value="selectedCategoryIds"
+        :options="categorySelectOptions"
+        placeholder="Todas las categorías"
         @update:model-value="onCategoryFilter"
       />
     </div>
 
-    <!-- Error banner -->
-    <Message v-if="error" severity="error" :closable="true" @close="clearError">
-      {{ error }}
-    </Message>
+    <ErrorAlert v-if="error" :message="error" closable @close="clearError" />
 
-    <!-- Tabla -->
-    <DataTable
-      :value="items"
-      :loading="loading"
-      lazy
-      paginator
-      :rows="pagination.pageSize"
-      :first="pagination.first"
-      :total-records="pagination.total"
-      paginator-template="PrevPageLink PageLinks NextPageLink"
-      striped-rows
-      table-style="min-width: 50rem"
-      @page="onPage"
-    >
-      <template #empty>
-        <div class="flex flex-col items-center gap-3 py-12 text-surface-400">
-          <FolderOpen :size="40" />
-          <span class="text-sm">No hay productos registrados</span>
-        </div>
-      </template>
+    <div class="flex flex-col gap-3">
+      <DataTable
+        :rows="items"
+        :columns="columns"
+        :row-key="(row) => row.id"
+        :loading="loading"
+        striped
+        table-class="min-w-[50rem]"
+      >
+        <template #empty>
+          <EmptyState :icon="FolderOpen" message="No hay productos registrados" />
+        </template>
 
-      <Column field="id" header="ID" style="width: 4rem" />
-
-      <Column field="name" header="Nombre">
-        <template #body="{ data }">
+        <template #cell-name="{ row }">
           <div class="flex items-center gap-2">
-            <Box :size="14" class="text-surface-400" />
-            <span class="font-medium">{{ data.name }}</span>
+            <Box class="size-3.5 text-muted-foreground" />
+            <span class="font-medium">{{ row.name }}</span>
           </div>
         </template>
-      </Column>
 
-      <Column field="code" header="Código" style="width: 9rem">
-        <template #body="{ data }">
-          <span class="font-mono text-sm">{{ data.code }}</span>
+        <template #cell-code="{ row }">
+          <span class="font-mono text-sm">{{ row.code }}</span>
         </template>
-      </Column>
 
-      <Column field="barcode" header="C. barras" style="width: 10rem">
-        <template #body="{ data }">
-          <span class="font-mono text-sm text-surface-500">{{ data.barcode || '—' }}</span>
+        <template #cell-barcode="{ row }">
+          <span class="font-mono text-sm text-muted-foreground">{{ row.barcode || '—' }}</span>
         </template>
-      </Column>
 
-      <Column field="price" header="Precio" style="width: 9rem">
-        <template #body="{ data }">
-          <span>{{ formatPrice(data.price) }}</span>
-        </template>
-      </Column>
+        <template #cell-price="{ row }">{{ formatPrice(row.price) }}</template>
 
-      <Column field="stock" header="Stock" style="width: 7rem">
-        <template #body="{ data }">
-          <span :class="data.low_stock ? 'text-red-500 font-semibold' : ''">
-            {{ data.stock }}
-            <span v-if="data.low_stock" class="text-xs">(bajo)</span>
+        <template #cell-stock="{ row }">
+          <span :class="{ 'font-semibold text-destructive': row.low_stock }">
+            {{ row.stock }}
+            <span v-if="row.low_stock" class="text-xs">(bajo)</span>
           </span>
         </template>
-      </Column>
 
-      <Column field="active" header="Estado" style="width: 7rem">
-        <template #body="{ data }">
-          <Tag
-            :value="data.active ? 'Activo' : 'Inactivo'"
-            :severity="data.active ? 'success' : 'secondary'"
-          />
+        <template #cell-active="{ row }">
+          <Badge :variant="row.active ? 'success' : 'secondary'">
+            {{ row.active ? 'Activo' : 'Inactivo' }}
+          </Badge>
         </template>
-      </Column>
 
-      <Column field="updated_at" header="Actualizado" style="width: 12rem">
-        <template #body="{ data }">
-          <span class="text-sm text-surface-500">{{ formatDateTime(data.updated_at) }}</span>
+        <template #cell-updated_at="{ row }">
+          <span class="text-sm text-muted-foreground">{{ formatDateTime(row.updated_at) }}</span>
         </template>
-      </Column>
 
-      <Column header="Acciones" style="width: 7rem">
-        <template #body="{ data }">
+        <template #cell-actions="{ row }">
           <div class="flex items-center gap-1">
-            <Button
-              severity="secondary"
-              text
-              rounded
-              size="small"
-              v-tooltip.top="'Editar'"
-              @click="router.push(`/products/${data.id}/edit`)"
-            >
-              <PencilLine :size="15" />
-            </Button>
-            <ProductDeleteButton :product="data" @deleted="fetchAll" />
+            <IconButton
+              :icon="Pencil"
+              tooltip="Editar"
+              @click="router.push(`/products/${row.id}/edit`)"
+            />
+            <ConfirmActionButton
+              :icon="Trash2"
+              tooltip="Eliminar"
+              :confirm="{
+                title: 'Confirmar eliminación',
+                description: `¿Eliminar el producto «${row.name}»?`,
+                confirmLabel: 'Eliminar',
+              }"
+              :action="() => remove(row.id)"
+              success-message="Producto eliminado"
+              @done="fetchAll"
+            />
           </div>
         </template>
-      </Column>
-    </DataTable>
+      </DataTable>
+
+      <DataTablePagination
+        :page="pagination.page"
+        :page-size="pagination.pageSize"
+        :total="pagination.total"
+        @update:page="onPage"
+      />
+    </div>
   </div>
 </template>

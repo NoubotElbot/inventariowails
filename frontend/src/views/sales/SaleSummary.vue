@@ -1,8 +1,6 @@
 <script setup lang="ts">
   import { computed } from 'vue';
-  import Calendar from '@primeicons/vue/calendar';
-  import Box from '@primeicons/vue/box';
-  import Wallet from '@primeicons/vue/wallet';
+  import { Box, Calendar, Wallet } from '@lucide/vue';
   import { formatPrice } from '@/utils/currency';
   import { formatDateTime } from '@/utils/date';
   import { totalUnits } from '@/utils/sale';
@@ -24,12 +22,12 @@
     <div
       v-for="stat in stats"
       :key="stat.label"
-      class="flex items-center gap-3 rounded-lg border border-surface-200 px-4 py-3 dark:border-surface-700"
+      class="flex items-center gap-3 rounded-lg border px-4 py-3"
     >
-      <component :is="stat.icon" :size="18" class="text-surface-400" />
+      <component :is="stat.icon" class="size-4.5 text-muted-foreground" />
       <div class="flex flex-col">
-        <span class="text-xs text-surface-500">{{ stat.label }}</span>
-        <span class="font-semibold text-surface-800 dark:text-surface-100">{{ stat.value }}</span>
+        <span class="text-xs text-muted-foreground">{{ stat.label }}</span>
+        <span class="font-semibold text-foreground">{{ stat.value }}</span>
       </div>
     </div>
   </div>
