@@ -1,6 +1,9 @@
 <script setup lang="ts">
   import { Box, InfoCircle, ShoppingCart, Tag } from '@primeicons/vue';
+  import { computed, onMounted, ref } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
+
+  import { systemService } from '@/services/systemService';
 
   const open = defineModel<boolean>('open', { default: true });
 
@@ -14,6 +17,19 @@
   ];
 
   const isActive = (path: string) => route.path.startsWith(path);
+
+  const version = ref('');
+  const versionLabel = computed(() =>
+    !version.value || version.value === 'dev' ? version.value : `v${version.value}`,
+  );
+
+  onMounted(async () => {
+    try {
+      version.value = await systemService.getVersion();
+    } catch {
+      version.value = '';
+    }
+  });
 </script>
 
 <template>
@@ -69,7 +85,7 @@
             <SidebarMenuItem>
               <SidebarMenuButton>
                 <InfoCircle class="size-6 shrink-0 text-xs" />
-                <span class="text-xs">v0.1.0</span>
+                <span class="text-xs">{{ versionLabel }}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

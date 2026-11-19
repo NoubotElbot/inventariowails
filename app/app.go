@@ -10,6 +10,7 @@ import (
 	producthandler "inventario/internal/modules/product/adapters/handler"
 	salehandler "inventario/internal/modules/sale/adapters/handler"
 	stockhandler "inventario/internal/modules/stock/adapters/handler"
+	systemhandler "inventario/internal/modules/system/adapters/handler"
 	"inventario/internal/platform/gormdb"
 
 	"github.com/joho/godotenv"
@@ -23,6 +24,7 @@ type App struct {
 	ProductHandler  *producthandler.ProductHandler
 	StockHandler    *stockhandler.StockHandler
 	SaleHandler     *salehandler.SaleHandler
+	SystemHandler   *systemhandler.SystemHandler
 }
 
 func NewApp() (*App, error) {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"io/fs"
 	"log"
 	"time"
 
@@ -11,8 +12,8 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-//go:embed frontend/dist
-var assets embed.FS
+//go:embed all:frontend/dist
+var embeddedAssets embed.FS
 
 func init() {
 	// Register a custom event whose associated data type is string.
@@ -23,6 +24,11 @@ func init() {
 
 func main() {
 	_ = godotenv.Load()
+
+	assets, err := fs.Sub(embeddedAssets, "frontend/dist")
+	if err != nil {
+		log.Fatalf("error loading frontend assets: %v", err)
+	}
 
 	inventory, err := app.NewApp()
 	if err != nil {
@@ -40,6 +46,7 @@ func main() {
 			application.NewService(inventory.ProductHandler),
 			application.NewService(inventory.StockHandler),
 			application.NewService(inventory.SaleHandler),
+			application.NewService(inventory.SystemHandler),
 		},
 	})
 
