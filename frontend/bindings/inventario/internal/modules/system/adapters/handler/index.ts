@@ -5,3 +5,8 @@ import * as SystemHandler from "./systemhandler.js";
 export {
     SystemHandler
 };
+
+export {
+    UpdateInfoResponse,
+    UpdateProgress
+} from "./models.js";

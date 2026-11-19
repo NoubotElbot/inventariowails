@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"inventario/app"
+	systemhandler "inventario/internal/modules/system/adapters/handler"
 
 	"github.com/joho/godotenv"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -20,6 +21,7 @@ func init() {
 	// This is not required, but the binding generator will pick up registered events
 	// and provide a strongly typed JS/TS API for them.
 	application.RegisterEvent[string]("time")
+	application.RegisterEvent[systemhandler.UpdateProgress](systemhandler.UpdateProgressEvent)
 }
 
 func main() {

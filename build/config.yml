@@ -9,8 +9,8 @@ info:
   productName: "Inventario Wails" # The name of the application
   productIdentifier: "noubot.inventario.wails" # The unique product identifier
   description: "Sistema simplificado de inventario y ventas" # The application description
-  copyright: "" # Copyright text
-  comments: "" # Comments
+  copyright: "© 2026, Noubot" # Copyright text
+  comments: "https://github.com/NoubotElbot/inventariowails" # Comments
   version: "1.0.0" # The application version
   # cfBundleIconName: "appicon" # The macOS icon name in Assets.car icon bundles (optional)
   #                               # Should match the name of your .icon file without the extension

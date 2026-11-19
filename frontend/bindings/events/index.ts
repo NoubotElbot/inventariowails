@@ -13,3 +13,8 @@ import "../github.com/wailsapp/wails/v3/internal/eventcreate.js";
  */
 export const Time = "time";
 
+/**
+ * Name of the custom event "update:progress".
+ */
+export const UpdateProgress = "update:progress";
+

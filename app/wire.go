@@ -5,7 +5,7 @@ import (
 	"inventario/internal/modules/product"
 	"inventario/internal/modules/sale"
 	"inventario/internal/modules/stock"
-	systemhandler "inventario/internal/modules/system/adapters/handler"
+	"inventario/internal/modules/system"
 )
 
 // wire assembles the business modules and injects the cross-module
@@ -20,5 +20,5 @@ func (a *App) wire() {
 	a.ProductHandler = productMod.Handler
 	a.StockHandler = stockMod.Handler
 	a.SaleHandler = saleMod.Handler
-	a.SystemHandler = systemhandler.NewSystemHandler()
+	a.SystemHandler = system.New().Handler
 }
