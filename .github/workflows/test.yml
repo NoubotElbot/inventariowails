@@ -30,10 +30,17 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Install SQLite dependencies
+      # GTK4/WebKitGTK are needed to compile packages that import Wails
+      # (e.g. the system handler), even though tests don't open any window.
+      - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y sqlite3 libsqlite3-dev
+          sudo apt-get install -y \
+            sqlite3 \
+            libsqlite3-dev \
+            pkg-config \
+            libgtk-4-dev \
+            libwebkitgtk-6.0-dev
 
       - name: Install Go dependencies
         run: go mod download
