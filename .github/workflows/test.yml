@@ -45,5 +45,8 @@ jobs:
       - name: Install Go dependencies
         run: go mod download
 
+      - name: Run go vet
+        run: go vet ./internal/...
+
       - name: Run Go tests
-        run: go test -v ./internal/...
+        run: go test -race -count=1 -shuffle=on -coverprofile=coverage.out ./internal/...
