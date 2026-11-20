@@ -4,11 +4,14 @@ package installer
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"inventario/internal/modules/system/core/domain"
@@ -41,6 +44,11 @@ func (i *Installer) Install(ctx context.Context, asset domain.Asset, progress po
 }
 
 func (i *Installer) download(ctx context.Context, asset domain.Asset, progress ports.ProgressFunc) (string, error) {
+	// Never run something that cannot be verified.
+	if asset.SHA256 == "" {
+		return "", domain.ErrManualUpdate
+	}
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, asset.DownloadURL, nil)
 	if err != nil {
 		return "", err
@@ -77,7 +85,8 @@ func (i *Installer) download(ctx context.Context, asset domain.Asset, progress p
 	}
 
 	pw := &progressWriter{total: total, report: progress}
-	_, copyErr := io.Copy(io.MultiWriter(f, pw), resp.Body)
+	hash := sha256.New()
+	_, copyErr := io.Copy(io.MultiWriter(f, hash, pw), resp.Body)
 	closeErr := f.Close()
 	if copyErr != nil {
 		_ = os.RemoveAll(dir)
@@ -90,6 +99,10 @@ func (i *Installer) download(ctx context.Context, asset domain.Asset, progress p
 	if total > 0 && pw.done != total {
 		_ = os.RemoveAll(dir)
 		return "", fmt.Errorf("descarga incompleta: %d de %d bytes", pw.done, total)
+	}
+	if got := hex.EncodeToString(hash.Sum(nil)); got != strings.ToLower(asset.SHA256) {
+		_ = os.RemoveAll(dir)
+		return "", domain.ErrChecksum
 	}
 
 	progress(pw.done, total)

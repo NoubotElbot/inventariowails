@@ -66,7 +66,7 @@
         </div>
 
         <p v-if="!info.auto_install" class="text-xs text-muted-foreground">
-          Esta instalación no admite actualización automática. Se abrirá la página de descargas para
+          Esta versión no se puede instalar automáticamente. Se abrirá la página de descargas para
           que instales la nueva versión manualmente.
         </p>
 

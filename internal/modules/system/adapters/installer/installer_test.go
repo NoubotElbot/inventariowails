@@ -2,6 +2,9 @@ package installer
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -24,6 +27,7 @@ func TestDownload(t *testing.T) {
 		Name:        "app-amd64-installer.exe",
 		DownloadURL: srv.URL,
 		Size:        int64(len(payload)),
+		SHA256:      sha256Hex(payload),
 	}, func(done, total int64) { lastDone, lastTotal = done, total })
 	if err != nil {
 		t.Fatal(err)
@@ -51,8 +55,48 @@ func TestDownload_HTTPError(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	_, err := New().download(context.Background(), domain.Asset{Name: "a.exe", DownloadURL: srv.URL}, func(int64, int64) {})
+	_, err := New().download(context.Background(), domain.Asset{Name: "a.exe", DownloadURL: srv.URL, SHA256: sha256Hex("")}, func(int64, int64) {})
 	if err == nil {
 		t.Fatal("expected error")
 	}
+}
+
+func TestDownload_ChecksumMismatch(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte("tampered"))
+	}))
+	defer srv.Close()
+
+	path, err := New().download(context.Background(), domain.Asset{
+		Name:        "a.exe",
+		DownloadURL: srv.URL,
+		SHA256:      sha256Hex("original"),
+	}, func(int64, int64) {})
+	if !errors.Is(err, domain.ErrChecksum) {
+		t.Fatalf("err = %v, want %v", err, domain.ErrChecksum)
+	}
+	if path != "" {
+		t.Fatalf("path = %q, want empty", path)
+	}
+}
+
+func TestDownload_MissingChecksum(t *testing.T) {
+	var requested bool
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requested = true
+	}))
+	defer srv.Close()
+
+	_, err := New().download(context.Background(), domain.Asset{Name: "a.exe", DownloadURL: srv.URL}, func(int64, int64) {})
+	if !errors.Is(err, domain.ErrManualUpdate) {
+		t.Fatalf("err = %v, want %v", err, domain.ErrManualUpdate)
+	}
+	if requested {
+		t.Fatal("must not download an asset without checksum")
+	}
+}
+
+func sha256Hex(s string) string {
+	sum := sha256.Sum256([]byte(s))
+	return hex.EncodeToString(sum[:])
 }
