@@ -92,7 +92,11 @@ func (s *UpdateService) CheckForUpdate(ctx context.Context) (domain.UpdateInfo, 
 	info.PublishedAt = release.PublishedAt
 	info.Available = latest.Compare(current) > 0
 	if info.Available {
-		info.Asset = domain.SelectAsset(release.Assets, s.goos, s.goarch)
+		// Without a published checksum the download cannot be verified, so
+		// the update falls back to the manual path.
+		if asset := domain.SelectAsset(release.Assets, s.goos, s.goarch); asset != nil && asset.SHA256 != "" {
+			info.Asset = asset
+		}
 	}
 
 	s.mu.Lock()

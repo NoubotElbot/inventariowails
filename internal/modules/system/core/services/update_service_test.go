@@ -42,7 +42,7 @@ func release(tag string) domain.Release {
 		Notes: "notas",
 		URL:   "https://example.com/releases/" + tag,
 		Assets: []domain.Asset{
-			{Name: "inventariowails-amd64-installer.exe", DownloadURL: "https://example.com/x.exe"},
+			{Name: "inventariowails-amd64-installer.exe", DownloadURL: "https://example.com/x.exe", SHA256: "abc123"},
 		},
 	}
 }
@@ -99,6 +99,20 @@ func TestCheckForUpdate(t *testing.T) {
 				t.Fatalf("latest = %q", info.LatestVersion)
 			}
 		})
+	}
+}
+
+func TestCheckForUpdate_AssetWithoutChecksumIsManual(t *testing.T) {
+	rel := release("v1.1.0")
+	rel.Assets[0].SHA256 = ""
+
+	info, err := newService("v1.0.0", &mockReleases{release: rel}, &mockInstaller{}, "windows").
+		CheckForUpdate(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !info.Available || info.Asset != nil {
+		t.Fatalf("available=%v asset=%v, want available without asset", info.Available, info.Asset)
 	}
 }
 

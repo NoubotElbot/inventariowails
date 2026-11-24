@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"inventario/internal/modules/system/core/domain"
@@ -52,6 +53,8 @@ type assetDTO struct {
 	Name               string `json:"name"`
 	BrowserDownloadURL string `json:"browser_download_url"`
 	Size               int64  `json:"size"`
+	// Digest is computed by GitHub on upload, e.g. "sha256:<hex>".
+	Digest string `json:"digest"`
 }
 
 // LatestRelease returns the most recent non-draft, non-prerelease release.
@@ -93,6 +96,7 @@ func toDomain(dto releaseDTO) domain.Release {
 			Name:        a.Name,
 			DownloadURL: a.BrowserDownloadURL,
 			Size:        a.Size,
+			SHA256:      sha256FromDigest(a.Digest),
 		})
 	}
 
@@ -104,4 +108,14 @@ func toDomain(dto releaseDTO) domain.Release {
 		PublishedAt: dto.PublishedAt,
 		Assets:      assets,
 	}
+}
+
+// sha256FromDigest extracts the hex value of a "sha256:<hex>" digest, or ""
+// for any other algorithm or a malformed value.
+func sha256FromDigest(digest string) string {
+	hex, ok := strings.CutPrefix(digest, "sha256:")
+	if !ok || len(hex) != 64 {
+		return ""
+	}
+	return strings.ToLower(hex)
 }

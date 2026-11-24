@@ -10,6 +10,9 @@ type Asset struct {
 	Name        string
 	DownloadURL string
 	Size        int64
+	// SHA256 is the lowercase hex digest of the file. Empty when the
+	// provider does not publish one; such assets are never auto-installed.
+	SHA256 string
 }
 
 // Release is a published application version.

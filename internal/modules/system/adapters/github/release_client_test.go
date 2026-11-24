@@ -26,7 +26,12 @@ func TestLatestRelease(t *testing.T) {
 			"body": "cambios",
 			"html_url": "https://github.com/owner/repo/releases/tag/v1.2.0",
 			"published_at": "2026-11-19T12:00:00Z",
-			"assets": [{"name": "app-amd64-installer.exe", "browser_download_url": "https://dl/app.exe", "size": 42}]
+			"assets": [
+				{"name": "app-amd64-installer.exe", "browser_download_url": "https://dl/app.exe", "size": 42,
+				 "digest": "sha256:ABCDEF0123456789abcdef0123456789abcdef0123456789abcdef0123456789"},
+				{"name": "app.dmg", "browser_download_url": "https://dl/app.dmg", "size": 7},
+				{"name": "app.deb", "browser_download_url": "https://dl/app.deb", "size": 7, "digest": "md5:abc"}
+			]
 		}`))
 	}))
 	defer srv.Close()
@@ -38,8 +43,14 @@ func TestLatestRelease(t *testing.T) {
 	if rel.Tag != "v1.2.0" || rel.Notes != "cambios" || rel.URL == "" || rel.PublishedAt.IsZero() {
 		t.Fatalf("unexpected release: %+v", rel)
 	}
-	if len(rel.Assets) != 1 || rel.Assets[0].DownloadURL != "https://dl/app.exe" || rel.Assets[0].Size != 42 {
+	if len(rel.Assets) != 3 || rel.Assets[0].DownloadURL != "https://dl/app.exe" || rel.Assets[0].Size != 42 {
 		t.Fatalf("unexpected assets: %+v", rel.Assets)
+	}
+	if want := "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"; rel.Assets[0].SHA256 != want {
+		t.Fatalf("sha256 = %q, want %q", rel.Assets[0].SHA256, want)
+	}
+	if rel.Assets[1].SHA256 != "" || rel.Assets[2].SHA256 != "" {
+		t.Fatalf("missing/non-sha256 digests must be empty: %+v", rel.Assets[1:])
 	}
 }
 

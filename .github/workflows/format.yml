@@ -1,0 +1,63 @@
+name: Format Frontend
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - "frontend/src/**"
+      - "frontend/.prettierrc"
+      - "frontend/.prettierignore"
+      - "frontend/package.json"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: format-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    name: Prettier (frontend)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: "12.16.1"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Prettier
+        working-directory: frontend
+        run: pnpm format
+
+      - name: Commit and push changes
+        run: |
+          if git diff --quiet; then
+            echo "Frontend already formatted, nothing to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src
+          git commit -m "style(frontend): format code with prettier"
+          git push
