@@ -67,7 +67,11 @@
     </PageHeader>
 
     <div class="flex flex-wrap items-center gap-3">
-      <SearchInput placeholder="Buscar por nombre, código o código de barras…" @search="onSearch" />
+      <SearchInput
+        placeholder="Buscar por nombre, código o código de barras…"
+        autofocus
+        @search="onSearch"
+      />
       <MultiSelect
         class="w-64"
         :model-value="selectedCategoryIds"

@@ -51,7 +51,7 @@
   <form class="flex flex-col gap-6" @submit.prevent="onAction('submit')">
     <div class="flex flex-col gap-4">
       <FormField label="Nombre" for="product-name" required>
-        <Input id="product-name" v-model="form.name" placeholder="Nombre del producto" />
+        <Input id="product-name" v-model="form.name" placeholder="Nombre del producto" autofocus/>
       </FormField>
 
       <div class="grid grid-cols-2 gap-4">
