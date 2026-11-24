@@ -9,7 +9,7 @@
   <SidebarProvider class="h-full min-h-0">
     <AppSidebar />
 
-    <SidebarInset class="min-h-0">
+    <SidebarInset class="min-h-0 min-w-0">
       <header class="flex h-12 shrink-0 items-center gap-2 border-b px-4">
         <SidebarTrigger class="-ml-1" />
         <span class="flex-1" />

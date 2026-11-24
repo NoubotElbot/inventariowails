@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import AppSelect from '@/components/common/AppSelect.vue';
   import FormField from '@/components/common/FormField.vue';
   import NumberInput from '@/components/common/NumberInput.vue';
@@ -10,30 +10,45 @@
   import type { ProductFormValues } from '@/types/product';
   import type { CategoryOptionResponse } from 'bindings/inventario/internal/modules/category/adapters/handler/models';
 
-  /** Shared create/edit product form. The stock field shows only when `form.stock` is set. */
+  /**
+   * Shared create/edit product form. The stock field shows only when `form.stock` is set.
+   * Passing `continueLabel` adds a secondary button that emits `submit-continue`.
+   */
   const form = defineModel<ProductFormValues>({ required: true });
 
   const {
     categoryOptions,
     submitLabel,
+    continueLabel,
     loading = false,
   } = defineProps<{
     categoryOptions: readonly CategoryOptionResponse[];
     submitLabel: string;
+    continueLabel?: string;
     loading?: boolean;
   }>();
 
   const emit = defineEmits<{
     submit: [];
+    'submit-continue': [];
     cancel: [];
   }>();
 
   const options = computed(() => toSelectOptions(categoryOptions));
   const withStock = computed(() => form.value.stock !== undefined);
+
+  // Which button triggered the pending save, so only that one shows the spinner.
+  const pendingAction = ref<'submit' | 'continue'>('submit');
+
+  function onAction(action: 'submit' | 'continue'): void {
+    pendingAction.value = action;
+    if (action === 'continue') emit('submit-continue');
+    else emit('submit');
+  }
 </script>
 
 <template>
-  <form class="flex flex-col gap-6" @submit.prevent="emit('submit')">
+  <form class="flex flex-col gap-6" @submit.prevent="onAction('submit')">
     <div class="flex flex-col gap-4">
       <FormField label="Nombre" for="product-name" required>
         <Input id="product-name" v-model="form.name" placeholder="Nombre del producto" />
@@ -73,8 +88,18 @@
 
     <div class="flex justify-end gap-2">
       <Button type="button" variant="outline" @click="emit('cancel')">Cancelar</Button>
+      <Button
+        v-if="continueLabel"
+        type="button"
+        variant="secondary"
+        :disabled="loading"
+        @click="onAction('continue')"
+      >
+        <Spinner v-if="loading && pendingAction === 'continue'" />
+        {{ continueLabel }}
+      </Button>
       <Button type="submit" :disabled="loading">
-        <Spinner v-if="loading" />
+        <Spinner v-if="loading && pendingAction === 'submit'" />
         {{ submitLabel }}
       </Button>
     </div>

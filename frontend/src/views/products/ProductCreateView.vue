@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onMounted, ref } from 'vue';
+  import { nextTick, onMounted, ref } from 'vue';
   import { useRouter } from 'vue-router';
   import { toast } from 'vue-sonner';
   import { Box } from '@lucide/vue';
@@ -16,15 +16,19 @@
   const error = ref<string | null>(null);
   const loading = ref(false);
 
-  const form = ref<Required<ProductFormValues>>({
-    name: '',
-    code: '',
-    barcode: '',
-    category_id: null,
-    price: 0,
-    stock: 0,
-    min_stock: 0,
-  });
+  function emptyForm(): Required<ProductFormValues> {
+    return {
+      name: '',
+      code: '',
+      barcode: '',
+      category_id: null,
+      price: 0,
+      stock: 0,
+      min_stock: 0,
+    };
+  }
+
+  const form = ref(emptyForm());
 
   onMounted(async () => {
     try {
@@ -35,13 +39,20 @@
     }
   });
 
-  async function handleCreate() {
+  /** `keepGoing` stays on the page with a fresh form (category kept) to register another one. */
+  async function handleCreate(keepGoing = false) {
     error.value = null;
     loading.value = true;
     try {
       await productService.create({ ...form.value });
       toast.success('Producto creado');
-      router.push('/products');
+      if (keepGoing) {
+        form.value = { ...emptyForm(), category_id: form.value.category_id };
+        await nextTick();
+        document.getElementById('product-name')?.focus();
+      } else {
+        router.push('/products');
+      }
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : String(cause);
     } finally {
@@ -60,8 +71,10 @@
       v-model="form"
       :category-options="categoryOptions"
       submit-label="Crear"
+      continue-label="Crear y agregar otro"
       :loading="loading"
-      @submit="handleCreate"
+      @submit="handleCreate()"
+      @submit-continue="handleCreate(true)"
       @cancel="router.back()"
     />
   </div>

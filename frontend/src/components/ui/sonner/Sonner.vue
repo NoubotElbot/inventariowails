@@ -30,29 +30,33 @@ const delegatedProps = reactiveOmit(props, 'class', 'toastOptions')
       '--gray4': 'var(--border)',
       '--gray5': 'var(--border)',
       '--gray12': 'var(--popover-foreground)',
+      '--width': '420px',
     }"
     :toast-options="props.toastOptions ?? {
+      // `!`: sonner's [data-sonner-toast][data-styled] rules out-specify plain utilities.
       classes: {
-        toast: 'rounded-2xl',
+        toast: 'rounded-2xl p-5! gap-3! text-base!',
+        description: 'text-sm!',
+        icon: 'size-5!',
       },
     }"
     v-bind="delegatedProps"
   >
     <template #success-icon>
-      <CircleCheckIcon class="size-4" />
+      <CircleCheckIcon class="size-5" />
     </template>
     <template #info-icon>
-      <InfoIcon class="size-4" />
+      <InfoIcon class="size-5" />
     </template>
     <template #warning-icon>
-      <TriangleAlertIcon class="size-4" />
+      <TriangleAlertIcon class="size-5" />
     </template>
     <template #error-icon>
-      <OctagonXIcon class="size-4" />
+      <OctagonXIcon class="size-5" />
     </template>
     <template #loading-icon>
       <div>
-        <Loader2Icon class="size-4 animate-spin" />
+        <Loader2Icon class="size-5 animate-spin" />
       </div>
     </template>
     <template #close-icon>

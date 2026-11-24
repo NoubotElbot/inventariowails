@@ -8,7 +8,7 @@
 <template>
   <TooltipProvider :delay-duration="300">
     <AppLayout />
-    <Toaster position="bottom-right" rich-colors close-button />
+    <Toaster position="top-center" rich-colors close-button />
     <ConfirmDialogHost />
   </TooltipProvider>
 </template>

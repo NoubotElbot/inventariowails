@@ -41,10 +41,8 @@
   const categorySelectOptions = computed(() => toSelectOptions(categoryOptions.value));
 
   const columns: DataTableColumn<Product>[] = [
-    { key: 'id', header: 'ID', class: 'w-16' },
-    { key: 'name', header: 'Nombre' },
     { key: 'code', header: 'Código', class: 'w-36' },
-    { key: 'barcode', header: 'C. barras', class: 'w-40' },
+    { key: 'name', header: 'Nombre' },
     { key: 'price', header: 'Precio', class: 'w-36' },
     { key: 'stock', header: 'Stock', class: 'w-28' },
     { key: 'active', header: 'Estado', class: 'w-28' },
