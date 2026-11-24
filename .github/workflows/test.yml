@@ -19,31 +19,21 @@ jobs:
     name: Tests (Go)
     runs-on: ubuntu-latest
 
+    env:
+      # Wails' CGO-free Linux backend: compiles without GTK/WebKit headers, so
+      # no system packages are needed. Tests never open a window; release
+      # builds still use the default cgo backend.
+      GOFLAGS: -tags=purego
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           # Keep this aligned with the go directive in go.mod.
           go-version-file: go.mod
-          cache: true
-
-      # GTK4/WebKitGTK are needed to compile packages that import Wails
-      # (e.g. the system handler), even though tests don't open any window.
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            sqlite3 \
-            libsqlite3-dev \
-            pkg-config \
-            libgtk-4-dev \
-            libwebkitgtk-6.0-dev
-
-      - name: Install Go dependencies
-        run: go mod download
 
       - name: Run go vet
         run: go vet ./internal/...
