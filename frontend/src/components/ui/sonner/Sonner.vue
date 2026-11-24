@@ -1,20 +1,20 @@
 <script lang="ts" setup>
-import type { ToasterProps } from 'vue-sonner'
+  import type { ToasterProps } from 'vue-sonner';
 
-import {
-  CircleCheckIcon,
-  InfoIcon,
-  Loader2Icon,
-  OctagonXIcon,
-  TriangleAlertIcon,
-  XIcon,
-} from '@lucide/vue'
-import { reactiveOmit } from '@vueuse/core'
-import { cn } from 'cn'
-import { Toaster as Sonner } from 'vue-sonner'
+  import {
+    CircleCheckIcon,
+    InfoIcon,
+    Loader2Icon,
+    OctagonXIcon,
+    TriangleAlertIcon,
+    XIcon,
+  } from '@lucide/vue';
+  import { reactiveOmit } from '@vueuse/core';
+  import { cn } from 'cn';
+  import { Toaster as Sonner } from 'vue-sonner';
 
-const props = defineProps<ToasterProps>()
-const delegatedProps = reactiveOmit(props, 'class', 'toastOptions')
+  const props = defineProps<ToasterProps>();
+  const delegatedProps = reactiveOmit(props, 'class', 'toastOptions');
 </script>
 
 <template>
@@ -32,14 +32,16 @@ const delegatedProps = reactiveOmit(props, 'class', 'toastOptions')
       '--gray12': 'var(--popover-foreground)',
       '--width': '420px',
     }"
-    :toast-options="props.toastOptions ?? {
-      // `!`: sonner's [data-sonner-toast][data-styled] rules out-specify plain utilities.
-      classes: {
-        toast: 'rounded-2xl p-5! gap-3! text-base!',
-        description: 'text-sm!',
-        icon: 'size-5!',
-      },
-    }"
+    :toast-options="
+      props.toastOptions ?? {
+        // `!`: sonner's [data-sonner-toast][data-styled] rules out-specify plain utilities.
+        classes: {
+          toast: 'rounded-2xl p-5! gap-3! text-base!',
+          description: 'text-sm!',
+          icon: 'size-5!',
+        },
+      }
+    "
     v-bind="delegatedProps"
   >
     <template #success-icon>

@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import type { NumberFieldRootEmits, NumberFieldRootProps } from 'reka-ui'
-import type { HTMLAttributes } from 'vue'
-import { reactiveOmit } from '@vueuse/core'
-import { cn } from 'cn'
-import { NumberFieldRoot, useForwardPropsEmits } from 'reka-ui'
+  import type { NumberFieldRootEmits, NumberFieldRootProps } from 'reka-ui';
+  import type { HTMLAttributes } from 'vue';
+  import { reactiveOmit } from '@vueuse/core';
+  import { cn } from 'cn';
+  import { NumberFieldRoot, useForwardPropsEmits } from 'reka-ui';
 
-const props = defineProps<NumberFieldRootProps & { class?: HTMLAttributes['class'] }>()
-const emits = defineEmits<NumberFieldRootEmits>()
+  const props = defineProps<NumberFieldRootProps & { class?: HTMLAttributes['class'] }>();
+  const emits = defineEmits<NumberFieldRootEmits>();
 
-const delegatedProps = reactiveOmit(props, 'class')
+  const delegatedProps = reactiveOmit(props, 'class');
 
-const forwarded = useForwardPropsEmits(delegatedProps, emits)
+  const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
 
 <template>
