@@ -1,22 +1,19 @@
 <script setup lang="ts">
-import type { ProgressRootProps } from 'reka-ui'
-import type { HTMLAttributes } from 'vue'
-import { reactiveOmit } from '@vueuse/core'
-import { cn } from 'cn'
-import {
-  ProgressIndicator,
-  ProgressRoot,
-} from 'reka-ui'
+  import type { ProgressRootProps } from 'reka-ui';
+  import type { HTMLAttributes } from 'vue';
+  import { reactiveOmit } from '@vueuse/core';
+  import { cn } from 'cn';
+  import { ProgressIndicator, ProgressRoot } from 'reka-ui';
 
-// Customized: `modelValue: null` renders an indeterminate (animated) bar.
-const props = withDefaults(
-  defineProps<ProgressRootProps & { class?: HTMLAttributes['class'] }>(),
-  {
-    modelValue: 0,
-  },
-)
+  // Customized: `modelValue: null` renders an indeterminate (animated) bar.
+  const props = withDefaults(
+    defineProps<ProgressRootProps & { class?: HTMLAttributes['class'] }>(),
+    {
+      modelValue: 0,
+    }
+  );
 
-const delegatedProps = reactiveOmit(props, 'class')
+  const delegatedProps = reactiveOmit(props, 'class');
 </script>
 
 <template>
@@ -26,7 +23,7 @@ const delegatedProps = reactiveOmit(props, 'class')
     :class="
       cn(
         'bg-muted h-1.5 rounded-full relative flex w-full items-center overflow-x-hidden',
-        props.class,
+        props.class
       )
     "
   >
