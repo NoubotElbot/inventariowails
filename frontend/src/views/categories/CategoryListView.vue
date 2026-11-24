@@ -63,7 +63,7 @@
     </PageHeader>
 
     <div class="flex flex-wrap items-center gap-4">
-      <SearchInput placeholder="Buscar por nombre…" @search="onSearch" />
+      <SearchInput placeholder="Buscar por nombre…" @search="onSearch" autofocus />
       <div class="flex items-center gap-2">
         <Checkbox id="show-deleted" v-model="onlyInactive" />
         <Label for="show-deleted" class="cursor-pointer">Mostrar eliminadas</Label>

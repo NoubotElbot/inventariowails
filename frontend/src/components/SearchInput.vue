@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onBeforeUnmount, ref, watch } from 'vue';
+  import { onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
   import { Search } from '@lucide/vue';
   import { Button } from '@/components/ui/button';
   import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
@@ -8,10 +8,12 @@
     defineProps<{
       placeholder?: string;
       debounce?: number;
+      autofocus?: boolean;
     }>(),
     {
       placeholder: 'Buscar…',
       debounce: 300,
+      autofocus: false,
     }
   );
 
@@ -20,11 +22,16 @@
   }>();
 
   const query = ref('');
+  const root = useTemplateRef<HTMLElement>('root');
   let timer: ReturnType<typeof setTimeout> | null = null;
 
   watch(query, (value) => {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => emit('search', value.trim()), props.debounce);
+  });
+
+  onMounted(() => {
+    if (props.autofocus) root.value?.querySelector('input')?.focus();
   });
 
   onBeforeUnmount(() => {
@@ -38,7 +45,7 @@
 </script>
 
 <template>
-  <div class="flex w-full max-w-md items-center gap-2">
+  <div ref="root" class="flex w-full max-w-md items-center gap-2">
     <InputGroup>
       <InputGroupAddon>
         <Search />
